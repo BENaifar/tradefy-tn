@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Live quotes (WebSocket test)</title>
+  <style>
+    body { font-family: sans-serif; margin: 1rem; }
+    table { border-collapse: collapse; }
+    th, td { border: 1px solid #ccc; padding: 4px 10px; text-align: right; }
+    th:first-child, td:first-child { text-align: left; }
+    .up { color: #0a7d2c; } .down { color: #c0262d; }
+  </style>
+</head>
+<body>
+  <h1>Live quotes</h1>
+  <p id="status">Connecting...</p>
+  <table>
+    <thead><tr><th>Ticker</th><th>Last</th><th>Change %</th><th>Volume</th><th>Time</th></tr></thead>
+    <tbody id="rows"></tbody>
+  </table>
+  <script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7.0.0/bundles/stomp.umd.min.js"></script>
+  <script>
+    const rows = {};
+    const body = document.getElementById("rows");
+    const status = document.getElementById("status");
+    const client = new StompJs.Client({
+      brokerURL: "ws://" + location.host + "/ws",
+      reconnectDelay: 3000,
+      onConnect: () => {
+        status.textContent = "Connected";
+        client.subscribe("/topic/quotes", msg => JSON.parse(msg.body).forEach(render));
+      },
+      onWebSocketClose: () => { status.textContent = "Disconnected, retrying..."; }
+    });
+    function render(q) {
+      let tr = rows[q.ticker];
+      if (!tr) {
+        tr = document.createElement("tr");
+        rows[q.ticker] = tr;
+        body.appendChild(tr);
+      }
+      const cls = q.changePercent > 0 ? "up" : q.changePercent < 0 ? "down" : "";
+      tr.innerHTML = "<td>" + q.ticker + "</td><td>" + q.last + "</td><td class='" + cls + "'>"
+        + q.changePercent + "</td><td>" + q.volume + "</td><td>" + (q.updatedAt || "") + "</td>";
+    }
+    client.activate();
+  </script>
+</body>
+</html>

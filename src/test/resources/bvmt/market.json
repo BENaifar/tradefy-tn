@@ -1,0 +1,21 @@
+{
+  "markets": [
+    { "isin": "TN0007500010", "last": 0.41, "close": 0.41, "change": 0.0, "open": 0.0, "high": 0.41, "low": 0.41,
+      "volume": 0, "caps": 0.0, "max": 0.0, "min": 0.0, "seance": "6 nov. 2026", "time": "15:00:00",
+      "limit": { "bid": 0.0, "ask": 0.0, "bidQty": 0, "askQty": 0 },
+      "referentiel": { "ticker": "AETEC", "stockName": "AETECH", "arabName": "آي تاك", "isin": "TN0007500010", "valGroup": "99" } },
+    { "isin": "TN0003400058", "last": 92.3, "close": 92.35, "change": -0.05, "open": 0.0, "high": 92.49, "low": 91.0,
+      "volume": 9928, "caps": 910051.6, "max": 94.14, "min": 90.46, "seance": "6 nov. 2026", "time": "15:00:00",
+      "limit": { "bid": 92.3, "ask": 92.4, "bidQty": 120, "askQty": 50 },
+      "referentiel": { "ticker": "AB", "stockName": "AMEN BANK", "arabName": "", "isin": "TN0003400058", "valGroup": "11" } },
+    { "isin": "TN0002300358", "last": 225.0, "close": 221.0, "change": 1.8, "open": 0.0, "high": 225.0, "low": 221.0,
+      "volume": 3, "caps": 675.0, "max": 0.0, "min": 0.0, "seance": "6 nov. 2026", "time": "15:00:00",
+      "limit": { "bid": 0.0, "ask": 0.0, "bidQty": 0, "askQty": 0 },
+      "referentiel": { "ticker": "AL", "stockName": "AIR LIQUIDE TSIE", "arabName": "", "isin": "TN0002300358", "valGroup": "99" } },
+    { "isin": "TN0007780018", "last": 9.99, "close": 10.0, "change": -0.09, "open": 0.0, "high": 10.14, "low": 9.83,
+      "volume": 3059, "caps": 30434.850000000002, "max": 10.18, "min": 9.8, "seance": "6 nov. 2026", "time": "15:00:00",
+      "limit": { "bid": 9.98, "ask": 9.99, "bidQty": 300, "askQty": 1000 },
+      "referentiel": { "ticker": "ARTES", "stockName": "ARTES", "arabName": "", "isin": "TN0007780018", "valGroup": "11" } }
+  ],
+  "sequence": 58463
+}
