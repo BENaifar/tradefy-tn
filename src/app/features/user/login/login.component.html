@@ -1,0 +1,88 @@
+<div class="auth-page">
+  <div class="auth-card">
+    <div class="auth-header">
+      <a routerLink="/" class="auth-brand">
+        <div class="brand-glyph">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline>
+            <polyline points="16 7 22 7 22 13"></polyline>
+          </svg>
+        </div>
+        <span>TRADE<span class="dim">X</span></span>
+      </a>
+      <h2 class="auth-title">Terminal Sign In</h2>
+      <p class="auth-subtitle">Access your institutional trading workspace</p>
+    </div>
+
+    <!-- Session Expired Notice -->
+    <div *ngIf="sessionExpired" class="alert-box alert-warn">
+      Your session has expired. Please sign in again.
+    </div>
+
+    <!-- Error Alert -->
+    <div *ngIf="errorMessage" class="alert-box alert-error">
+      {{ errorMessage }}
+    </div>
+
+    <!-- Form -->
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="auth-form" novalidate>
+      <div class="form-group">
+        <label for="email">Work Email</label>
+        <input id="email"
+               type="email"
+               formControlName="email"
+               class="form-control"
+               placeholder="trader@firm.com"
+               [class.is-invalid]="loginForm.get('email')?.invalid && loginForm.get('email')?.touched" />
+        <span class="form-error" *ngIf="loginForm.get('email')?.touched && loginForm.get('email')?.hasError('required')">
+          Email is required
+        </span>
+        <span class="form-error" *ngIf="loginForm.get('email')?.touched && loginForm.get('email')?.hasError('email')">
+          Please enter a valid email address
+        </span>
+      </div>
+
+      <div class="form-group">
+        <div class="label-row">
+          <label for="password">Password</label>
+          <a routerLink="/forgot-password" class="forgot-link">Forgot password?</a>
+        </div>
+        <input id="password"
+               type="password"
+               formControlName="password"
+               class="form-control"
+               placeholder="••••••••••••"
+               [class.is-invalid]="loginForm.get('password')?.invalid && loginForm.get('password')?.touched" />
+        <span class="form-error" *ngIf="loginForm.get('password')?.touched && loginForm.get('password')?.hasError('required')">
+          Password is required
+        </span>
+      </div>
+
+      <button type="submit" [disabled]="loading" class="btn btn-primary btn-block">
+        <span *ngIf="!loading">Authenticate Terminal</span>
+        <span *ngIf="loading" class="loading-state">
+          <span class="spinner"></span> Verifying Keys...
+        </span>
+      </button>
+    </form>
+
+    <!-- Quick Demo Logins for Testing -->
+    <div class="demo-helpers">
+      <span class="demo-title">TEST WITH PRE-SEEDED ACCOUNTS:</span>
+      <div class="demo-buttons">
+        <button type="button" (click)="fillCredentials('admin@esprit.tn', 'Admin@123456')" class="btn-demo">
+          Admin (Full CRUD)
+        </button>
+        <button type="button" (click)="fillCredentials('user@esprit.tn', 'User@123456')" class="btn-demo">
+          Trader (User Role)
+        </button>
+      </div>
+    </div>
+
+    <div class="auth-footer">
+      <span>Don't have an institutional account?</span>
+      <a routerLink="/register">Create an account</a>
+    </div>
+  </div>
+</div>
+

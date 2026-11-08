@@ -1,0 +1,111 @@
+<div class="admin-shell" [class.sidebar-open]="sidebarOpen" [class.sidebar-collapsed]="sidebarCollapsed">
+  <a class="skip-link" href="#admin-content">Skip to admin content</a>
+
+  <aside id="admin-sidebar" class="admin-sidebar" aria-label="Admin navigation">
+    <div class="brand-row">
+      <a routerLink="/" class="brand" aria-label="TradeX public home">
+        <span class="brand-mark"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 17L10 11L14 15L21 7M15 7H21V13"/></svg></span>
+        <strong>TRADE<span>X</span></strong>
+      </a>
+      <span class="admin-badge">ADMIN</span>
+    </div>
+
+    <nav class="admin-nav">
+      <span class="nav-label">CONTROL CENTER</span>
+      <button type="button" [class.active]="activeView === 'home'" (click)="setView('home')">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11L12 3L21 11V21H15V15H9V21H3Z"/></svg><span>Home</span><small>01</small>
+      </button>
+      <button type="button" [class.active]="activeView === 'users'" (click)="setView('users')">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3 20C3.5 16.5 5.5 15 9 15S14.5 16.5 15 20M16 6A3 3 0 0 1 16 12M17 15C19.5 15.4 20.7 17 21 20"/></svg><span>Users</span><small>{{ users.length }}</small>
+      </button>
+      <button type="button" [class.active]="activeView === 'security'" (click)="setView('security')">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3L19 6V11C19 16 16 19 12 21C8 19 5 16 5 11V6Z"/><path d="M9 12L11 14L15 10"/></svg><span>Security</span><small>03</small>
+      </button>
+      <span class="nav-label secondary-label">SYSTEM</span>
+      <button type="button" [class.active]="activeView === 'settings'" (click)="setView('settings')">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19 12L21 10L19 6L16 7L14 4H10L8 7L5 6L3 10L5 12L3 14L5 18L8 17L10 20H14L16 17L19 18L21 14Z"/></svg><span>Settings</span><small>04</small>
+      </button>
+    </nav>
+
+    <div class="admin-profile">
+      <span class="avatar">{{ initials }}</span>
+      <span><strong>{{ admin?.firstName }} {{ admin?.lastName }}</strong><small>Super administrator</small></span>
+      <button type="button" (click)="logout()" aria-label="Sign out"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 4H5V20H10M14 8L18 12L14 16M8 12H18"/></svg></button>
+    </div>
+  </aside>
+
+  <button *ngIf="sidebarOpen" type="button" class="sidebar-scrim" (click)="closeSidebar()" aria-label="Close navigation"></button>
+
+  <div class="admin-main">
+    <header class="admin-topbar">
+      <div class="topbar-leading">
+        <button type="button" class="menu-button" (click)="toggleSidebar()" aria-controls="admin-sidebar" [attr.aria-expanded]="sidebarExpanded" aria-label="Toggle admin navigation">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7H20M4 12H20M4 17H20"/></svg>
+        </button>
+        <div><span>TRADEX / ADMIN</span><h1>{{ pageTitle }}</h1></div>
+      </div>
+      <div class="topbar-meta"><span>{{ today | date:'EEE, MMM d' }}</span><small>SECURE SESSION</small></div>
+    </header>
+
+    <main id="admin-content" class="admin-content">
+      <section *ngIf="activeView === 'home'" class="home-view">
+        <div class="page-intro">
+          <div><span class="eyebrow"><i></i> PLATFORM OPERATIONS</span><h2>Good day, {{ admin?.firstName || 'Administrator' }}.</h2><p>Monitor access, users, and operational health from one command surface.</p></div>
+          <button type="button" class="silver-button" (click)="setView('users')">Manage users <span>↗</span></button>
+        </div>
+
+        <div class="stats-grid">
+          <article><span>TOTAL USERS</span><strong>{{ users.length }}</strong><small>Registered accounts</small></article>
+          <article><span>ACTIVE ACCESS</span><strong>{{ activeUsers }}</strong><small>Enabled accounts</small></article>
+          <article><span>ADMINISTRATORS</span><strong>{{ adminCount }}</strong><small>Privileged identities</small></article>
+          <article><span>LOCKED</span><strong>{{ lockedUsers }}</strong><small>Require review</small></article>
+        </div>
+
+        <div class="home-grid">
+          <article class="panel directory-preview">
+            <div class="panel-heading"><div><span>IDENTITY DIRECTORY</span><h3>Recent accounts</h3></div><button type="button" (click)="setView('users')">View all</button></div>
+            <div *ngIf="loading" class="empty-state">Synchronizing directory…</div>
+            <div *ngIf="!loading && !users.length" class="empty-state">No users available.</div>
+            <div class="user-row" *ngFor="let user of users | slice:0:5">
+              <span class="user-avatar">{{ user.firstName.charAt(0) }}{{ user.lastName.charAt(0) }}</span>
+              <span class="user-copy"><strong>{{ user.firstName }} {{ user.lastName }}</strong><small>{{ user.email }}</small></span>
+              <span class="role">{{ user.role === 'ROLE_ADMIN' ? 'ADMIN' : 'USER' }}</span>
+              <span class="state" [class.disabled]="!user.enabled"><i></i>{{ user.enabled ? 'Active' : 'Disabled' }}</span>
+            </div>
+          </article>
+
+          <div class="side-stack">
+            <article class="panel health-panel"><div class="panel-heading"><div><span>SYSTEM HEALTH</span><h3>Operational status</h3></div><i class="status-light"></i></div><div class="health-score"><strong>99.99<small>%</small></strong><span>Availability</span></div><dl><div><dt>API gateway</dt><dd>Operational</dd></div><div><dt>Identity service</dt><dd>Operational</dd></div><div><dt>Database</dt><dd>Connected</dd></div></dl></article>
+            <article class="panel quick-panel"><span>QUICK ACTIONS</span><button type="button" (click)="setView('users')">Review user access <b>→</b></button><button type="button" (click)="setView('security')">Open security center <b>→</b></button></article>
+          </div>
+        </div>
+      </section>
+
+      <section *ngIf="activeView === 'users'" class="users-view">
+        <div class="page-intro compact"><div><span class="eyebrow">IDENTITY MANAGEMENT</span><h2>User directory</h2><p>Review account roles and platform access.</p></div><button type="button" class="silver-button" (click)="loadUsers()">Refresh directory</button></div>
+        <div *ngIf="errorMessage" class="error-banner">{{ errorMessage }}</div>
+        <div class="panel user-table-wrap">
+          <table>
+            <thead><tr><th>User</th><th>Role</th><th>Status</th><th>Created</th><th class="align-right">Access</th></tr></thead>
+            <tbody>
+              <tr *ngFor="let user of users">
+                <td><div class="table-user"><span class="user-avatar">{{ user.firstName.charAt(0) }}{{ user.lastName.charAt(0) }}</span><span><strong>{{ user.firstName }} {{ user.lastName }}</strong><small>{{ user.email }}</small></span></div></td>
+                <td><span class="role">{{ user.role === 'ROLE_ADMIN' ? 'ADMIN' : 'USER' }}</span></td>
+                <td><span class="state" [class.disabled]="!user.enabled"><i></i>{{ user.enabled ? 'Active' : 'Disabled' }}</span></td>
+                <td>{{ user.createdAt | date:'mediumDate' }}</td>
+                <td class="align-right"><button type="button" class="access-button" [disabled]="user.id === admin?.id" (click)="toggleUser(user)">{{ user.enabled ? 'Disable' : 'Enable' }}</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section *ngIf="activeView === 'security' || activeView === 'settings'" class="placeholder-view">
+        <span class="eyebrow">{{ activeView === 'security' ? 'SECURITY OPERATIONS' : 'SYSTEM CONFIGURATION' }}</span>
+        <h2>{{ pageTitle }}</h2>
+        <p>{{ activeView === 'security' ? 'Identity monitoring and account protection controls are ready for backend telemetry.' : 'Platform preferences and operational policies will live here.' }}</p>
+        <div class="panel placeholder-card"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3L19 6V11C19 16 16 19 12 21C8 19 5 16 5 11V6Z"/><path d="M9 12L11 14L15 10"/></svg><div><strong>Protected administration surface</strong><span>Only authorized administrators can access this route.</span></div></div>
+      </section>
+    </main>
+  </div>
+</div>

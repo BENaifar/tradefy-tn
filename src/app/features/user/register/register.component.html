@@ -1,0 +1,129 @@
+<div class="auth-page">
+  <div class="auth-card">
+    <div class="auth-header">
+      <a routerLink="/" class="auth-brand">
+        <div class="brand-glyph">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline>
+            <polyline points="16 7 22 7 22 13"></polyline>
+          </svg>
+        </div>
+        <span>TRADE<span class="dim">X</span></span>
+      </a>
+      <h2 class="auth-title">Create Account</h2>
+      <p class="auth-subtitle">Join TradeX for institutional execution</p>
+    </div>
+
+    <!-- Error Alert -->
+    <div *ngIf="errorMessage" class="alert-box alert-error">
+      {{ errorMessage }}
+    </div>
+
+    <!-- Success Alert -->
+    <div *ngIf="successMessage" class="alert-box alert-success">
+      {{ successMessage }}
+    </div>
+
+    <!-- Form -->
+    <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="auth-form" novalidate>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="firstName">First Name</label>
+          <input id="firstName"
+                 type="text"
+                 formControlName="firstName"
+                 class="form-control"
+                 placeholder="Alex"
+                 [class.is-invalid]="registerForm.get('firstName')?.invalid && registerForm.get('firstName')?.touched" />
+          <span class="form-error" *ngIf="registerForm.get('firstName')?.touched && registerForm.get('firstName')?.invalid">
+            Required (min 2 chars)
+          </span>
+        </div>
+
+        <div class="form-group">
+          <label for="lastName">Last Name</label>
+          <input id="lastName"
+                 type="text"
+                 formControlName="lastName"
+                 class="form-control"
+                 placeholder="Vance"
+                 [class.is-invalid]="registerForm.get('lastName')?.invalid && registerForm.get('lastName')?.touched" />
+          <span class="form-error" *ngIf="registerForm.get('lastName')?.touched && registerForm.get('lastName')?.invalid">
+            Required (min 2 chars)
+          </span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="email">Institutional Email</label>
+        <input id="email"
+               type="email"
+               formControlName="email"
+               class="form-control"
+               placeholder="trader@quantdesk.com"
+               [class.is-invalid]="registerForm.get('email')?.invalid && registerForm.get('email')?.touched" />
+        <span class="form-error" *ngIf="registerForm.get('email')?.touched && registerForm.get('email')?.hasError('required')">
+          Email is required
+        </span>
+        <span class="form-error" *ngIf="registerForm.get('email')?.touched && registerForm.get('email')?.hasError('email')">
+          Please enter a valid email address
+        </span>
+      </div>
+
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input id="password"
+               type="password"
+               formControlName="password"
+               class="form-control"
+               placeholder="At least 8 chars with upper, lower, number, symbol"
+               [class.is-invalid]="registerForm.get('password')?.invalid && registerForm.get('password')?.touched" />
+
+        <!-- Live Password Regex Criteria Checklist -->
+        <div class="password-checklist">
+          <div class="check-item" [class.passed]="hasMinLength">
+            <span class="check-dot"></span> 8–64 characters
+          </div>
+          <div class="check-item" [class.passed]="hasUpper">
+            <span class="check-dot"></span> 1+ uppercase letter (A-Z)
+          </div>
+          <div class="check-item" [class.passed]="hasLower">
+            <span class="check-dot"></span> 1+ lowercase letter (a-z)
+          </div>
+          <div class="check-item" [class.passed]="hasDigit">
+            <span class="check-dot"></span> 1+ numeric digit (0-9)
+          </div>
+          <div class="check-item" [class.passed]="hasSpecial">
+            <span class="check-dot"></span> 1+ special char (&#64;#$%^&+=!._-)
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="confirmPassword">Confirm Password</label>
+        <input id="confirmPassword"
+               type="password"
+               formControlName="confirmPassword"
+               class="form-control"
+               placeholder="Re-enter password"
+               [class.is-invalid]="registerForm.get('confirmPassword')?.touched && registerForm.hasError('mismatch')" />
+        <span class="form-error" *ngIf="registerForm.get('confirmPassword')?.touched && registerForm.hasError('mismatch')">
+          Passwords do not match
+        </span>
+      </div>
+
+      <button type="submit" [disabled]="loading || registerForm.invalid" class="btn btn-primary btn-block">
+        <span *ngIf="!loading">Create Institutional Account</span>
+        <span *ngIf="loading" class="loading-state">
+          <span class="spinner"></span> Creating Account...
+        </span>
+      </button>
+    </form>
+
+    <div class="auth-footer">
+      <span>Already have a terminal seat?</span>
+      <a routerLink="/login">Sign in</a>
+    </div>
+  </div>
+</div>
+

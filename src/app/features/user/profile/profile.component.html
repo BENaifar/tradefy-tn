@@ -1,0 +1,313 @@
+<div class="workspace" [class.sidebar-open]="sidebarOpen" [class.sidebar-collapsed]="sidebarCollapsed">
+  <a class="skip-link" href="#workspace-content">Skip to workspace content</a>
+
+  <aside id="workspace-sidebar" class="workspace-sidebar" aria-label="Workspace navigation">
+    <div class="sidebar-brand">
+      <a routerLink="/" class="brand-link" aria-label="TradeX public home">
+        <span class="brand-mark">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 17L10 11L14 15L21 7M15 7H21V13"/></svg>
+        </span>
+        <span class="brand-name">TRADE<span>X</span></span>
+      </a>
+      <span class="workspace-tag">WORKSPACE</span>
+    </div>
+
+    <nav class="sidebar-nav">
+      <span class="nav-section-label">WORKSPACE</span>
+      <button type="button" [class.active]="activeTab === 'home'" (click)="setActiveTab('home')">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11L12 3L21 11V21H15V15H9V21H3Z"/></svg>
+        <span>Home</span><small>01</small>
+      </button>
+      <button type="button" [class.active]="activeTab === 'profile'" (click)="setActiveTab('profile')">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21C4.8 16.8 7.5 15 12 15C16.5 15 19.2 16.8 20 21"/></svg>
+        <span>Profile</span><small>02</small>
+      </button>
+      <button type="button" [class.active]="activeTab === 'security'" (click)="setActiveTab('security')">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 11V8A7 7 0 0 1 19 8V11M4 11H20V21H4Z"/><circle cx="12" cy="16" r="1"/></svg>
+        <span>Security</span><small>03</small>
+      </button>
+
+      <ng-container *ngIf="isAdmin">
+        <span class="nav-section-label admin-label">ADMINISTRATION</span>
+        <button type="button" [class.active]="activeTab === 'admin'" (click)="setActiveTab('admin')">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5H20V19H4Z"/><path d="M4 10H20M9 10V19"/><circle cx="7" cy="7.5" r=".5" fill="currentColor"/></svg>
+          <span>User directory</span><small>{{ usersList.length || '—' }}</small>
+        </button>
+      </ng-container>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <span class="avatar">{{ initials }}</span>
+        <span class="sidebar-user-copy"><strong>{{ currentUser?.firstName }} {{ currentUser?.lastName }}</strong><small>{{ currentUser?.email }}</small></span>
+      </div>
+      <button type="button" class="logout-button" (click)="logout()" aria-label="Sign out">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 4H5V20H10M14 8L18 12L14 16M8 12H18"/></svg>
+      </button>
+    </div>
+  </aside>
+
+  <button *ngIf="sidebarOpen" class="sidebar-overlay" type="button" (click)="closeSidebar()" aria-label="Close navigation"></button>
+
+  <div class="workspace-main">
+    <header class="workspace-topbar">
+      <div class="topbar-leading">
+        <button type="button" class="menu-button" (click)="toggleSidebar()" aria-controls="workspace-sidebar" [attr.aria-expanded]="sidebarExpanded" aria-label="Toggle workspace navigation">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7H20M4 12H20M4 17H20"/></svg>
+        </button>
+        <div class="page-heading">
+          <span>TRADEX / {{ activeTab | uppercase }}</span>
+          <h1>{{ pageTitle }}</h1>
+        </div>
+      </div>
+      <div class="topbar-actions">
+        <div class="topbar-date"><span>{{ today | date:'EEE, MMM d' }}</span><small>MARKET SESSION</small></div>
+        <button type="button" class="icon-button" aria-label="Notifications">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9A6 6 0 0 1 18 9V14L20 17H4L6 14ZM10 20H14"/></svg>
+          <i></i>
+        </button>
+        <button type="button" class="topbar-avatar" (click)="setActiveTab('profile')" aria-label="Open profile">{{ initials }}</button>
+      </div>
+    </header>
+
+    <main id="workspace-content" class="workspace-content">
+      <section *ngIf="activeTab === 'home'" class="home-view" aria-labelledby="home-title">
+        <div class="welcome-row">
+          <div>
+            <span class="eyebrow"><i></i> LIVE WORKSPACE</span>
+            <h2 id="home-title">Welcome back, {{ currentUser?.firstName || 'Trader' }}.</h2>
+            <p>Your account, market perspective, and next actions in one place.</p>
+          </div>
+          <button type="button" class="primary-action" (click)="setActiveTab('profile')">Manage account <span aria-hidden="true">↗</span></button>
+        </div>
+
+        <div class="metric-grid" aria-label="Account overview">
+          <article class="metric-card">
+            <div class="metric-header"><span>ACCOUNT STATUS</span><i class="live-dot"></i></div>
+            <strong>Active</strong><p>Verified trading workspace</p>
+          </article>
+          <article class="metric-card">
+            <div class="metric-header"><span>ACCESS LEVEL</span><small>02</small></div>
+            <strong>{{ isAdmin ? 'Administrator' : 'Trader' }}</strong><p>{{ isAdmin ? 'Full user management' : 'Personal workspace' }}</p>
+          </article>
+          <article class="metric-card">
+            <div class="metric-header"><span>SECURITY</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3L19 6V11C19 16 16 19 12 21C8 19 5 16 5 11V6Z"/><path d="M9 12L11 14L15 10"/></svg></div>
+            <strong>Protected</strong><p>Password and access controls</p>
+          </article>
+          <article class="metric-card">
+            <div class="metric-header"><span>SEAT ID</span><small>TX</small></div>
+            <strong>#{{ currentUser?.id || '—' }}</strong><p>Institutional workspace</p>
+          </article>
+        </div>
+
+        <div class="dashboard-grid">
+          <article class="dashboard-panel market-panel">
+            <div class="panel-heading">
+              <div><span class="panel-kicker">MARKET PULSE</span><h3>Watchlist snapshot</h3></div>
+              <span class="demo-label">ILLUSTRATIVE DATA</span>
+            </div>
+            <div class="watchlist">
+              <div *ngFor="let market of marketSnapshot" class="watch-row">
+                <div><strong>{{ market.symbol }}</strong><span>SPOT</span></div>
+                <span class="watch-price">{{ market.price }}</span>
+                <span [class.positive]="market.positive" [class.negative]="!market.positive">{{ market.change }}</span>
+                <svg viewBox="0 0 100 30" aria-hidden="true"><polyline [attr.points]="market.positive ? '0,25 14,20 27,23 40,13 52,17 66,8 79,12 100,3' : '0,5 14,9 27,7 40,16 52,12 66,21 79,18 100,27'"/></svg>
+              </div>
+            </div>
+          </article>
+
+          <article class="dashboard-panel insight-panel">
+            <div class="panel-heading"><div><span class="panel-kicker">AI PERSPECTIVE</span><h3>Context before action</h3></div><span class="insight-orbit" aria-hidden="true"></span></div>
+            <div class="insight-visual" aria-hidden="true">
+              <svg viewBox="0 0 300 160"><circle cx="150" cy="80" r="56"/><ellipse cx="150" cy="80" rx="126" ry="43" transform="rotate(-14 150 80)"/><path d="M123 92L145 70L161 83L185 55M166 55H185V74"/><circle cx="248" cy="50" r="4" class="silver-fill"/></svg>
+            </div>
+            <p>Review market context, liquidity, and volatility before forming your next decision.</p>
+            <button type="button" class="panel-link">Open intelligence <span aria-hidden="true">↗</span></button>
+          </article>
+
+          <article class="dashboard-panel quick-panel">
+            <div class="panel-heading"><div><span class="panel-kicker">QUICK ACTIONS</span><h3>Continue your setup</h3></div></div>
+            <div class="quick-actions">
+              <button type="button" (click)="setActiveTab('profile')"><span class="quick-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M5 21C6 17 8 15 12 15C16 15 18 17 19 21"/></svg></span><span><strong>Review profile</strong><small>Identity and contact details</small></span><i>↗</i></button>
+              <button type="button" (click)="setActiveTab('security')"><span class="quick-icon"><svg viewBox="0 0 24 24"><path d="M5 11V8A7 7 0 0 1 19 8V11M4 11H20V21H4Z"/></svg></span><span><strong>Security settings</strong><small>Update access credentials</small></span><i>↗</i></button>
+              <button *ngIf="isAdmin" type="button" (click)="setActiveTab('admin')"><span class="quick-icon"><svg viewBox="0 0 24 24"><path d="M4 5H20V19H4ZM4 10H20"/></svg></span><span><strong>Manage users</strong><small>Directory and permissions</small></span><i>↗</i></button>
+            </div>
+          </article>
+
+          <article class="dashboard-panel activity-panel">
+            <div class="panel-heading"><div><span class="panel-kicker">ACCOUNT LEDGER</span><h3>Workspace activity</h3></div></div>
+            <ol class="activity-list">
+              <li><i></i><div><strong>Profile synchronized</strong><span>{{ currentUser?.updatedAt | date:'medium' }}</span></div></li>
+              <li><i></i><div><strong>Account provisioned</strong><span>{{ currentUser?.createdAt | date:'mediumDate' }}</span></div></li>
+              <li><i></i><div><strong>Access status</strong><span>{{ currentUser?.accountNonLocked ? 'Account is secure and unlocked' : 'Account access is locked' }}</span></div></li>
+            </ol>
+          </article>
+        </div>
+      </section>
+
+      <section *ngIf="activeTab === 'profile'" class="settings-view" aria-labelledby="profile-title">
+        <div class="view-heading"><span class="eyebrow">02 / IDENTITY</span><h2 id="profile-title">Personal credentials</h2><p>Manage the verified identity and email connected to your workspace.</p></div>
+        <div class="settings-layout">
+          <aside class="identity-card">
+            <span class="large-avatar">{{ initials }}</span><h3>{{ currentUser?.firstName }} {{ currentUser?.lastName }}</h3><p>{{ currentUser?.email }}</p>
+            <span class="role-badge">{{ isAdmin ? 'ADMINISTRATOR' : 'INSTITUTIONAL TRADER' }}</span>
+            <dl><div><dt>Seat ID</dt><dd>#{{ currentUser?.id }}</dd></div><div><dt>Status</dt><dd class="status-value"><i></i> Active</dd></div><div><dt>Created</dt><dd>{{ currentUser?.createdAt | date:'mediumDate' }}</dd></div></dl>
+          </aside>
+          <div class="settings-card">
+            <div *ngIf="profileError" class="alert-box alert-error">{{ profileError }}</div>
+            <div *ngIf="profileMessage" class="alert-box alert-success">{{ profileMessage }}</div>
+            <form [formGroup]="profileForm" (ngSubmit)="onUpdateProfile()" class="workspace-form">
+              <div class="form-row"><div class="form-group"><label for="profFirstName">First name</label><input id="profFirstName" type="text" formControlName="firstName" class="form-control"></div><div class="form-group"><label for="profLastName">Last name</label><input id="profLastName" type="text" formControlName="lastName" class="form-control"></div></div>
+              <div class="form-group"><label for="profEmail">Work email address</label><input id="profEmail" type="email" formControlName="email" class="form-control"></div>
+              <div class="form-actions"><button type="submit" [disabled]="profileLoading || profileForm.invalid" class="primary-action">{{ profileLoading ? 'Updating…' : 'Save profile changes' }}</button></div>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      <section *ngIf="activeTab === 'security'" class="settings-view" aria-labelledby="security-title">
+        <div class="view-heading"><span class="eyebrow">03 / SECURITY</span><h2 id="security-title">Access credentials</h2><p>Use a strong, unique password for your TradeX workspace.</p></div>
+        <div class="security-layout">
+          <div class="security-note"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3L19 6V11C19 16 16 19 12 21C8 19 5 16 5 11V6Z"/><path d="M9 12L11 14L15 10"/></svg><div><strong>Password standard</strong><p>8–64 characters with uppercase, lowercase, number, and special character.</p></div></div>
+          <div class="settings-card">
+            <div *ngIf="passwordError" class="alert-box alert-error">{{ passwordError }}</div>
+            <div *ngIf="passwordMessage" class="alert-box alert-success">{{ passwordMessage }}</div>
+            <form [formGroup]="passwordForm" (ngSubmit)="onChangePassword()" class="workspace-form">
+              <div class="form-group"><label for="currPass">Current password</label><input id="currPass" type="password" formControlName="currentPassword" class="form-control" autocomplete="current-password"></div>
+              <div class="form-group"><label for="newPass">New password</label><input id="newPass" type="password" formControlName="newPassword" class="form-control" autocomplete="new-password"><span class="field-hint">8–64 chars · uppercase · lowercase · number · symbol</span></div>
+              <div class="form-group"><label for="confPass">Confirm new password</label><input id="confPass" type="password" formControlName="confirmPassword" class="form-control" autocomplete="new-password"><span class="form-error" *ngIf="passwordForm.get('confirmPassword')?.touched && passwordForm.hasError('mismatch')">Passwords do not match.</span></div>
+              <div class="form-actions"><button type="submit" [disabled]="passwordLoading || passwordForm.invalid" class="primary-action">{{ passwordLoading ? 'Updating…' : 'Update password' }}</button></div>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      <section *ngIf="isAdmin && activeTab === 'admin'" class="admin-view" aria-labelledby="admin-title">
+        <div class="admin-view-heading"><div><span class="eyebrow">ADMIN / DIRECTORY</span><h2 id="admin-title">User administration</h2><p>Manage workspace access, roles, and account status.</p></div><button type="button" (click)="openCreateModal()" class="primary-action">Provision user <span aria-hidden="true">+</span></button></div>
+        <div *ngIf="adminError" class="alert-box alert-error">{{ adminError }}</div><div *ngIf="adminMessage" class="alert-box alert-success">{{ adminMessage }}</div>
+        <div class="directory-card">
+          <div class="directory-toolbar"><span>{{ usersList.length }} TOTAL ACCOUNTS</span><button type="button" (click)="loadAllUsers()">Refresh directory</button></div>
+          <div class="table-responsive">
+            <table class="tradex-table"><thead><tr><th>ID</th><th>User</th><th>Role</th><th>Status</th><th>Created</th><th class="text-right">Actions</th></tr></thead>
+              <tbody><tr *ngFor="let u of usersList"><td class="cell-id">#{{ u.id }}</td><td><div class="table-user"><span>{{ u.firstName.charAt(0) }}{{ u.lastName.charAt(0) }}</span><div><strong>{{ u.firstName }} {{ u.lastName }}</strong><small>{{ u.email }}</small></div></div></td><td><span class="role-pill" [class.admin]="u.role === 'ROLE_ADMIN'">{{ u.role === 'ROLE_ADMIN' ? 'ADMIN' : 'TRADER' }}</span></td><td><span class="status-pill" [class.active]="u.enabled" [class.disabled]="!u.enabled">{{ u.enabled ? 'ACTIVE' : 'DISABLED' }}</span></td><td class="cell-date">{{ u.createdAt | date:'mediumDate' }}</td><td class="cell-actions text-right"><button (click)="onToggleStatus(u)" class="action-btn" [disabled]="u.id === currentUser?.id">{{ u.enabled ? 'Disable' : 'Enable' }}</button><button (click)="openEditModal(u)" class="action-btn">Edit</button><button (click)="onDeleteUser(u)" class="action-btn btn-danger" [disabled]="u.id === currentUser?.id">Delete</button></td></tr><tr *ngIf="usersList.length === 0"><td colspan="6" class="empty-cell">No users found.</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- ========================================================
+       MODAL: PROVISION NEW USER (ADMIN)
+       ======================================================== -->
+  <div *ngIf="showCreateModal" class="modal-backdrop">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title">Provision New User</h3>
+        <button (click)="closeCreateModal()" class="close-btn">&times;</button>
+      </div>
+
+      <form [formGroup]="createUserForm" (ngSubmit)="onSubmitCreateUser()" class="modal-form">
+        <div class="form-row">
+          <div class="form-group">
+            <label>First Name</label>
+            <input type="text" formControlName="firstName" class="form-control" placeholder="Sam" />
+          </div>
+          <div class="form-group">
+            <label>Last Name</label>
+            <input type="text" formControlName="lastName" class="form-control" placeholder="Altman" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Email Address</label>
+          <input type="email" formControlName="email" class="form-control" placeholder="user@domain.com" />
+        </div>
+
+        <div class="form-group">
+          <label>Initial Password</label>
+          <input type="password" formControlName="password" class="form-control" placeholder="Strong password (8-64 chars, upper, lower, num, sym)" />
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Role</label>
+            <select formControlName="role" class="form-control">
+              <option value="ROLE_USER">Regular Trader (ROLE_USER)</option>
+              <option value="ROLE_ADMIN">Administrator (ROLE_ADMIN)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Account Status</label>
+            <select formControlName="enabled" class="form-control">
+              <option [ngValue]="true">Active</option>
+              <option [ngValue]="false">Disabled</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" (click)="closeCreateModal()" class="btn btn-ghost">Cancel</button>
+          <button type="submit" [disabled]="adminLoading || createUserForm.invalid" class="btn btn-primary">
+            Create User Account
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================================
+       MODAL: EDIT USER (ADMIN)
+       ======================================================== -->
+  <div *ngIf="showEditModal" class="modal-backdrop">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title">Edit User #{{ selectedUserForEdit?.id }}</h3>
+        <button (click)="closeEditModal()" class="close-btn">&times;</button>
+      </div>
+
+      <form [formGroup]="editUserForm" (ngSubmit)="onSubmitEditUser()" class="modal-form">
+        <div class="form-row">
+          <div class="form-group">
+            <label>First Name</label>
+            <input type="text" formControlName="firstName" class="form-control" />
+          </div>
+          <div class="form-group">
+            <label>Last Name</label>
+            <input type="text" formControlName="lastName" class="form-control" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Email Address</label>
+          <input type="email" formControlName="email" class="form-control" />
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Role</label>
+            <select formControlName="role" class="form-control">
+              <option value="ROLE_USER">ROLE_USER</option>
+              <option value="ROLE_ADMIN">ROLE_ADMIN</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Active Status</label>
+            <select formControlName="enabled" class="form-control">
+              <option [ngValue]="true">Active</option>
+              <option [ngValue]="false">Disabled</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" (click)="closeEditModal()" class="btn btn-ghost">Cancel</button>
+          <button type="submit" [disabled]="adminLoading || editUserForm.invalid" class="btn btn-primary">
+            Save Changes
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
