@@ -8,6 +8,7 @@ import { ActivityComponent } from './pages/activity/activity.component';
 import { AllocationComponent } from './pages/allocation/allocation.component';
 import { PerformanceComponent } from './pages/performance/performance.component';
 import { LeaderboardComponent } from './pages/leaderboard/leaderboard.component';
+import { EquityCurveComponent } from './components/equity-curve/equity-curve.component';
 import { TradeTicketComponent } from './components/trade-ticket/trade-ticket.component';
 import { PositionDrawerComponent } from './components/position-drawer/position-drawer.component';
 import { DashboardPortfolioStripComponent } from './components/dashboard-portfolio-strip/dashboard-portfolio-strip.component';
@@ -18,7 +19,7 @@ import { AdminPortfoliosComponent } from './components/admin-portfolios/admin-po
 @NgModule({
   declarations: [
     PortfolioOverviewComponent, PositionsComponent, ActivityComponent, AllocationComponent, PerformanceComponent, LeaderboardComponent,
-    TradeTicketComponent, PositionDrawerComponent, DashboardPortfolioStripComponent, DashboardModulesRowComponent, AdminPortfoliosComponent
+    TradeTicketComponent, PositionDrawerComponent, EquityCurveComponent, DashboardPortfolioStripComponent, DashboardModulesRowComponent, AdminPortfoliosComponent
   ],
   imports: [SharedUiModule, MarketDataModule],
   // Embedded in the old dashboard / admin pages (declared in AppModule).

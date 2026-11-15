@@ -2,6 +2,105 @@
   <div class="tx-container">
     <tx-module-header kicker="PORTFOLIO / POSITIONS" title="Positions"></tx-module-header>
     <tx-module-tabs [tabs]="tabs"></tx-module-tabs>
-    <tx-empty-state title="Positions" message="This page is built in a later phase."></tx-empty-state>
+
+    <div class="tabsbar" role="tablist" aria-label="Position status">
+      <button type="button" role="tab" class="tx-chip" [class.active]="tab === 'open'" [attr.aria-selected]="tab === 'open'" (click)="setTab('open')">Open ({{ vm?.positions?.length ?? '…' }})</button>
+      <button type="button" role="tab" class="tx-chip" [class.active]="tab === 'closed'" [attr.aria-selected]="tab === 'closed'" (click)="setTab('closed')">Closed ({{ closed.data ? closed.data.length : '…' }})</button>
+    </div>
+
+    <div class="chips" *ngIf="sectors.length > 1" role="group" aria-label="Filter by sector" data-lenis-prevent>
+      <button type="button" class="tx-chip" [class.active]="!sector" (click)="setSector('')">All sectors</button>
+      <button *ngFor="let s of sectors" type="button" class="tx-chip" [class.active]="sector === s" (click)="setSector(s)">{{ s }}</button>
+    </div>
+
+    <!-- Closed stats (route 33) -->
+    <div class="tx-grid-4 stats" *ngIf="tab === 'closed' && stats.data as st">
+      <tx-metric-card kicker="WINNING TRADES" [value]="st.winningTrades + ''"></tx-metric-card>
+      <tx-metric-card kicker="LOSING TRADES" [value]="st.losingTrades + ''"></tx-metric-card>
+      <tx-metric-card kicker="WIN RATE" [value]="st.winRatePct | pct: false"></tx-metric-card>
+      <tx-metric-card kicker="REALIZED P&L" [value]="st.realizedPnl | money: true: true" [valueClass]="st.realizedPnl > 0 ? 'pos' : st.realizedPnl < 0 ? 'neg' : ''"></tx-metric-card>
+    </div>
+
+    <tx-panel>
+      <tx-skeleton *ngIf="(tab === 'open' && vm?.loading && !vm?.positions) || (tab === 'closed' && closed.loading && !closed.data)" [rows]="5" [height]="26"></tx-skeleton>
+      <tx-error-state *ngIf="tab === 'open' && vm?.error && !vm?.positions" [message]="vm?.error?.message ?? ''" (retry)="store.refresh()"></tx-error-state>
+      <tx-error-state *ngIf="tab === 'closed' && closed.error" [message]="closed.error.message" (retry)="closed.reload()"></tx-error-state>
+      <tx-empty-state *ngIf="tab === 'open' && vm?.positions && !list.length" title="No open positions" message="Buy a stock to open your first position.">
+        <button type="button" class="tx-btn primary sm" (click)="trade('', 'BUY')">Place a trade</button><a class="tx-btn sm" routerLink="/markets">Browse markets</a>
+      </tx-empty-state>
+      <tx-empty-state *ngIf="tab === 'closed' && closed.data && !list.length" title="No closed positions" message="Positions you fully sell show up here with their realized result."></tx-empty-state>
+
+      <!-- Open -->
+      <div class="tx-table-wrap" data-lenis-prevent *ngIf="tab === 'open' && list.length">
+        <table class="tx-table">
+          <thead>
+            <tr>
+              <th class="sortable" (click)="sortBy('ticker')" [attr.aria-sort]="ariaSort('ticker')">Stock</th>
+              <th class="sortable num" (click)="sortBy('quantity')" [attr.aria-sort]="ariaSort('quantity')">Qty</th>
+              <th class="sortable num hide-sm" (click)="sortBy('avgCost')" [attr.aria-sort]="ariaSort('avgCost')">Avg cost</th>
+              <th class="sortable num" (click)="sortBy('lastPrice')" [attr.aria-sort]="ariaSort('lastPrice')">Last</th>
+              <th class="sortable num" (click)="sortBy('marketValue')" [attr.aria-sort]="ariaSort('marketValue')">Market value</th>
+              <th class="sortable num" (click)="sortBy('unrealizedPnl')" [attr.aria-sort]="ariaSort('unrealizedPnl')">Unrealized P&amp;L</th>
+              <th class="sortable num hide-sm" (click)="sortBy('dayChangePct')" [attr.aria-sort]="ariaSort('dayChangePct')">Day</th>
+              <th class="sortable hide-sm" (click)="sortBy('weightPct')" [attr.aria-sort]="ariaSort('weightPct')">Weight</th>
+              <th class="sortable num hide-sm" (click)="sortBy('holdingDays')" [attr.aria-sort]="ariaSort('holdingDays')">Days</th>
+              <th class="num">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let p of list; trackBy: trackId" class="clickable" (click)="open(p.ticker)">
+              <td data-label="Stock" class="ticker-cell"><strong>{{ p.ticker }}</strong><small>{{ p.name }}</small></td>
+              <td data-label="Qty" class="num">{{ p.quantity | qty }}<small *ngIf="p.reservedQuantity" class="muted"> ({{ p.reservedQuantity | qty }} reserved)</small></td>
+              <td data-label="Avg cost" class="num hide-sm">{{ p.avgCost | money: false }}</td>
+              <td data-label="Last" class="num">{{ p.lastPrice | money: false }}</td>
+              <td data-label="Market value" class="num">{{ p.marketValue | money: false }}</td>
+              <td data-label="Unrealized P&L" class="num"><tx-delta [value]="p.unrealizedPnl" kind="money"></tx-delta><br /><tx-delta [value]="p.unrealizedPnlPct"></tx-delta></td>
+              <td data-label="Day" class="num hide-sm"><tx-delta [value]="p.dayChangePct"></tx-delta></td>
+              <td data-label="Weight" class="hide-sm"><div class="w"><span [style.width.%]="p.weightPct"></span></div><small class="muted">{{ p.weightPct | pct: false }}</small></td>
+              <td data-label="Days" class="num hide-sm">{{ p.holdingDays }}</td>
+              <td data-label="Actions" class="num" (click)="$event.stopPropagation()">
+                <button type="button" class="tx-btn sm" (click)="trade(p.ticker, 'BUY')">Buy more</button>
+                <button type="button" class="tx-btn sm" (click)="trade(p.ticker, 'SELL')">Sell</button>
+                <a class="tx-btn sm" [routerLink]="['/chart', p.ticker]">Chart</a>
+              </td>
+            </tr>
+          </tbody>
+          <tfoot *ngIf="summary() as s">
+            <tr class="totals">
+              <td>Total (from your portfolio summary)</td><td></td><td class="hide-sm"></td><td></td>
+              <td class="num">{{ s.marketValue | money: false }}</td>
+              <td class="num"><tx-delta [value]="s.unrealizedPnl" kind="money"></tx-delta></td>
+              <td class="hide-sm"></td><td class="hide-sm"></td><td class="hide-sm"></td><td></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+
+      <!-- Closed -->
+      <div class="tx-table-wrap" data-lenis-prevent *ngIf="tab === 'closed' && list.length">
+        <table class="tx-table">
+          <thead>
+            <tr>
+              <th class="sortable" (click)="sortBy('ticker')" [attr.aria-sort]="ariaSort('ticker')">Stock</th>
+              <th class="sortable num" (click)="sortBy('realizedPnl')" [attr.aria-sort]="ariaSort('realizedPnl')">Realized P&amp;L</th>
+              <th class="sortable" (click)="sortBy('openedAt')" [attr.aria-sort]="ariaSort('openedAt')">Opened</th>
+              <th class="sortable" (click)="sortBy('closedAt')" [attr.aria-sort]="ariaSort('closedAt')">Closed</th>
+              <th class="sortable num" (click)="sortBy('holdingDays')" [attr.aria-sort]="ariaSort('holdingDays')">Days held</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let p of list; trackBy: trackId" class="clickable" (click)="open(p.ticker)">
+              <td data-label="Stock" class="ticker-cell"><strong>{{ p.ticker }}</strong><small>{{ p.name }}</small></td>
+              <td data-label="Realized P&L" class="num"><tx-delta [value]="p.realizedPnl" kind="money"></tx-delta></td>
+              <td data-label="Opened">{{ p.openedAt | tunisTime }}</td>
+              <td data-label="Closed">{{ p.closedAt | tunisTime }}</td>
+              <td data-label="Days held" class="num">{{ p.holdingDays }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </tx-panel>
   </div>
 </div>
+
+<app-position-drawer [ticker]="selected" (closed)="closeDrawer()"></app-position-drawer>

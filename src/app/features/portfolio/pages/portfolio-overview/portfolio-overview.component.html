@@ -1,7 +1,120 @@
 <div class="tx-page">
   <div class="tx-container">
-    <tx-module-header kicker="PORTFOLIO" title="Portfolio overview"></tx-module-header>
+    <tx-module-header kicker="PORTFOLIO" title="Portfolio"></tx-module-header>
     <tx-module-tabs [tabs]="tabs"></tx-module-tabs>
-    <tx-empty-state title="Portfolio overview" message="This page is built in a later phase."></tx-empty-state>
+
+    <ng-container *ngIf="store.vm$ | async as vm">
+      <tx-skeleton *ngIf="vm.loading && !vm.summary" [rows]="6" [height]="28"></tx-skeleton>
+      <tx-error-state *ngIf="vm.error && !vm.summary" [message]="vm.error.message" (retry)="store.refresh()"></tx-error-state>
+
+      <ng-container *ngIf="vm.summary as s">
+        <!-- Hero -->
+        <section class="tx-panel hero">
+          <div class="main">
+            <span class="tx-kicker">TOTAL VALUE · {{ s.currency }}</span>
+            <strong class="big num">{{ s.totalValue | money }}</strong>
+            <div class="sub">
+              <span>Today <tx-delta [value]="s.dayPnl" kind="money"></tx-delta> <tx-delta [value]="s.dayPnlPct"></tx-delta></span>
+              <span>Total return <tx-delta [value]="s.totalReturnPct"></tx-delta></span>
+            </div>
+          </div>
+          <div class="splitbar" role="img" [attr.aria-label]="'Cash ' + (s.availableCash | money) + ', invested ' + (s.marketValue | money) + ', reserved ' + (s.reservedCash | money)">
+            <div class="bar">
+              <span *ngFor="let p of split(s)" [class]="p.cls" [style.width.%]="p.pct" [title]="p.label + ': ' + fmtMoney(p.value)"></span>
+            </div>
+            <ul>
+              <li *ngFor="let p of split(s)"><i [class]="p.cls"></i>{{ p.label }} <b class="num">{{ p.value | money }}</b></li>
+            </ul>
+          </div>
+        </section>
+
+        <div class="tx-alert warn" *ngIf="s.missingPrices?.length" role="status">
+          No price is available for {{ s.missingPrices.join(', ') }}: these holdings are valued at their last known price.
+        </div>
+
+        <!-- Metrics -->
+        <div class="tx-grid-4 metrics">
+          <tx-metric-card kicker="NET CONTRIBUTIONS" [value]="s.netContributions | money" [hint]="hints.netContributions"></tx-metric-card>
+          <tx-metric-card kicker="REALIZED P&L" [value]="s.realizedPnl | money: true: true" [valueClass]="s.realizedPnl > 0 ? 'pos' : s.realizedPnl < 0 ? 'neg' : ''" [hint]="hints.realized"></tx-metric-card>
+          <tx-metric-card kicker="UNREALIZED P&L" [value]="s.unrealizedPnl | money: true: true" [valueClass]="s.unrealizedPnl > 0 ? 'pos' : s.unrealizedPnl < 0 ? 'neg' : ''" [hint]="hints.unrealized"></tx-metric-card>
+          <tx-metric-card kicker="TOTAL P&L" [value]="s.totalPnl | money: true: true" [valueClass]="s.totalPnl > 0 ? 'pos' : s.totalPnl < 0 ? 'neg' : ''" [hint]="hints.totalPnl"></tx-metric-card>
+          <tx-metric-card kicker="FEES PAID" [value]="s.totalFees | money" [hint]="hints.fees"></tx-metric-card>
+          <tx-metric-card kicker="OPEN POSITIONS" [value]="s.openPositionsCount + ''" [hint]="hints.positions"></tx-metric-card>
+          <tx-metric-card kicker="AVAILABLE CASH" [value]="s.availableCash | money" [sub]="s.reservedCash ? (s.reservedCash | money) + ' reserved' : ''"></tx-metric-card>
+          <tx-metric-card kicker="CREATED" [value]="s.createdAt | tunisTime: 'date'" [hint]="hints.created"></tx-metric-card>
+        </div>
+
+        <!-- Equity curve -->
+        <tx-panel kicker="EQUITY CURVE" title="Portfolio value over time" class="block">
+          <app-equity-curve [height]="300"></app-equity-curve>
+        </tx-panel>
+
+        <div class="tx-grid-2 block">
+          <!-- Allocation donut -->
+          <tx-panel kicker="ALLOCATION" title="Where your money is">
+            <div actions>
+              <tx-segmented [options]="groupOptions" [value]="groupBy" (valueChange)="setGroup($event)" label="Group allocation by"></tx-segmented>
+              <a class="tx-btn sm" routerLink="/portfolio/allocation">Open</a>
+            </div>
+            <tx-skeleton *ngIf="alloc.loading && !alloc.data" [rows]="4" [height]="22"></tx-skeleton>
+            <tx-error-state *ngIf="alloc.error" [message]="alloc.error.message" (retry)="alloc.reload()"></tx-error-state>
+            <tx-donut *ngIf="slices.length" [slices]="slices" centerLabel="Total" [centerValue]="(alloc.data?.totalValue | money: false) ?? ''"></tx-donut>
+            <tx-empty-state *ngIf="alloc.data && !slices.length" title="Nothing allocated yet" message="Your allocation appears once you hold positions."></tx-empty-state>
+          </tx-panel>
+
+          <!-- P&L by position -->
+          <tx-panel kicker="PERFORMANCE" title="Unrealized P&L by position">
+            <tx-bars *ngIf="vm.positions?.length" [items]="bars(vm)" [diverging]="true" format="money"></tx-bars>
+            <tx-empty-state *ngIf="vm.positions && !vm.positions.length" title="No open positions" message="Buy a stock to see its profit and loss here.">
+              <button type="button" class="tx-btn primary sm" (click)="trade()">Place a trade</button>
+            </tx-empty-state>
+          </tx-panel>
+        </div>
+
+        <!-- Treemap -->
+        <tx-panel kicker="POSITIONS" title="Size = market value · colour = return" class="block">
+          <tx-treemap *ngIf="vm.positions?.length" [items]="tiles(vm)" [height]="280" (select)="openPosition($event)"></tx-treemap>
+          <tx-empty-state *ngIf="vm.positions && !vm.positions.length" title="No open positions"></tx-empty-state>
+        </tx-panel>
+
+        <!-- Cash actions -->
+        <tx-panel kicker="CASH" title="Deposit or withdraw" class="block">
+          <div class="cash">
+            <tx-segmented [options]="cashOptions" [value]="cashTab" (valueChange)="setCashTab($event)" label="Cash operation"></tx-segmented>
+            <div class="tx-alert err" *ngIf="cashError" role="alert">{{ cashError }}</div>
+            <form [formGroup]="cashForm" (ngSubmit)="submitCash()" novalidate class="cashform">
+              <div class="tx-field">
+                <label for="cash-amount">Amount (TND)</label>
+                <input id="cash-amount" class="tx-input" type="text" inputmode="decimal" autocomplete="off" placeholder="0.000" formControlName="amount" />
+                <small class="tx-field-error" *ngIf="controlError(cashForm.controls.amount) as e">{{ e }}</small>
+                <small class="hint" *ngIf="cashTab === 'withdraw' && availableCash !== null">Available to withdraw: {{ availableCash | money }}</small>
+              </div>
+              <div class="tx-field">
+                <label for="cash-note">Note (optional)</label>
+                <input id="cash-note" class="tx-input" type="text" maxlength="255" formControlName="note" />
+                <small class="tx-field-error" *ngIf="controlError(cashForm.controls.note) as e">{{ e }}</small>
+              </div>
+              <button type="submit" class="tx-btn primary" [disabled]="cashForm.invalid || cashPending">
+                <span *ngIf="cashPending" class="tx-spinner"></span> {{ cashTab === 'deposit' ? 'Deposit' : 'Withdraw' }}
+              </button>
+            </form>
+          </div>
+        </tx-panel>
+
+        <!-- Danger zone -->
+        <section class="tx-panel danger">
+          <button type="button" class="toggle" (click)="dangerOpen = !dangerOpen" [attr.aria-expanded]="dangerOpen">
+            <span class="tx-kicker">DANGER ZONE</span><span>{{ dangerOpen ? '−' : '+' }}</span>
+          </button>
+          <div *ngIf="dangerOpen" class="body">
+            <p>Resetting deletes every position and transaction and puts your cash back to the initial virtual capital. Your rank on the leaderboard restarts too. Pending orders must be cancelled first.</p>
+            <div class="tx-alert err" *ngIf="resetError" role="alert">{{ resetError }}</div>
+            <button type="button" class="tx-btn danger" [disabled]="resetPending" (click)="reset()"><span *ngIf="resetPending" class="tx-spinner"></span> Reset portfolio</button>
+          </div>
+        </section>
+      </ng-container>
+    </ng-container>
   </div>
 </div>
+
+<app-position-drawer [ticker]="selectedTicker" (closed)="selectedTicker = null"></app-position-drawer>

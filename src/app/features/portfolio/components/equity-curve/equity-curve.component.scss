@@ -1,0 +1,5 @@
+@use '../../../../shared/ui/styles/index' as *;
+
+:host { display: block; @include tx-tokens; }
+.bar { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
+.note { margin: 10px 0 0; color: var(--tx-muted); font-size: 0.62rem; }

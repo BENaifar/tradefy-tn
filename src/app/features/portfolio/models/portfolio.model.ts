@@ -49,9 +49,6 @@ export interface BuyingPower {
 }
 export interface CashOperationRequest { amount: number; note?: string; }
 export interface DevExecutionRequest { ticker: string; side: OrderSide; quantity: number; price?: number; }
-export interface TradeExecution {
-  userId: number; orderId: string; executionId: string; ticker: string; side: OrderSide; quantity: number; price: number; executedAt: string;
-}
 export interface PositionResponse {
   id: number; ticker: string; name: string; sector: string; status: PositionStatus; quantity: number; reservedQuantity: number;
   availableQuantity: number; avgCost: number; totalCost: number; lastPrice: number; marketValue: number; unrealizedPnl: number;

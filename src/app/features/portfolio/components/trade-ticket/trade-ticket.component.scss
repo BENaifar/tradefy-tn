@@ -1,1 +1,21 @@
-:host { display: block; }
+@use '../../../../shared/ui/styles/index' as *;
+
+:host { display: block; @include tx-tokens; }
+.sim { margin-bottom: 14px; }
+.ticket { display: flex; flex-direction: column; gap: 16px; }
+.inst { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 12px; border: 1px solid var(--tx-border); border-radius: 8px; background: var(--tx-panel-2);
+  strong { display: block; font-size: 0.9rem; } .px { display: flex; gap: 8px; align-items: baseline; font-size: 0.8rem; } }
+.chips { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 2px; }
+.est { padding: 14px; border: 1px solid var(--tx-border); border-radius: 8px; background: var(--tx-panel-2);
+  .note { margin: 4px 0 10px; font-size: 0.62rem; }
+  dl { display: flex; flex-direction: column; gap: 7px; margin: 0; }
+  dl div { display: flex; justify-content: space-between; font-size: 0.72rem; border-bottom: 1px solid var(--tx-border-soft); padding-bottom: 6px; }
+  dt { color: var(--tx-muted); } dd { margin: 0; } dd.strong { font-weight: 600; color: #fff; }
+  .tx-alert { margin: 10px 0 0; } }
+.review { padding: 14px; border: 1px solid var(--silver-line); border-radius: 8px; background: rgba(255, 255, 255, 0.04); p { margin-bottom: 12px; font-size: 0.82rem; line-height: 1.5; } }
+.row { display: flex; gap: 8px; flex-wrap: wrap; }
+.tx-btn.buy { background: transparent; color: var(--pos); border: 1px solid rgba(74, 222, 128, 0.5); &:hover:not(:disabled) { background: rgba(74, 222, 128, 0.1); transform: none; } }
+.tx-btn.sell { background: transparent; color: var(--neg); border: 1px solid rgba(248, 113, 113, 0.5); &:hover:not(:disabled) { background: rgba(248, 113, 113, 0.1); transform: none; } }
+.done { display: flex; flex-direction: column; gap: 14px;
+  .big { font-family: var(--font-heading); font-size: 1.3rem; letter-spacing: -0.03em; }
+  dl { margin: 0; display: flex; flex-direction: column; gap: 8px; div { display: flex; justify-content: space-between; font-size: 0.74rem; border-bottom: 1px solid var(--tx-border-soft); padding-bottom: 6px; } dt { color: var(--tx-muted); } dd { margin: 0; } } }

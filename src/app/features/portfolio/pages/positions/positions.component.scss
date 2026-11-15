@@ -1,1 +1,10 @@
 @use '../../../../shared/ui/styles/index' as *;
+
+:host { display: block; }
+.tabsbar { display: flex; gap: 8px; margin-bottom: 12px; }
+.chips { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 8px; .tx-chip { flex: none; } }
+.stats { margin-bottom: 16px; }
+.w { width: 80px; height: 5px; border-radius: 3px; background: rgba(255, 255, 255, 0.08); overflow: hidden; span { display: block; height: 100%; background: var(--silver-muted); } }
+.tx-table td.num .tx-btn { margin-left: 4px; }
+.totals td { font-weight: 600; color: #fff; background: #0c0e0d; }
+@media (max-width: 768px) { .totals { display: none; } }

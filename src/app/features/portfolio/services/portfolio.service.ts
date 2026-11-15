@@ -6,7 +6,7 @@ import { ApiClient } from '../../../shared/ui/util/api-client';
 import { toPortfolioError } from '../errors/portfolio-error.handler';
 import {
   BuyingPower, CashOperationRequest, DevExecutionRequest, PageResponse, PortfolioApiError, PortfolioSummaryResponse,
-  TradeExecution, TransactionQuery, TransactionResponse
+  PositionResponse, TransactionQuery, TransactionResponse
 } from '../models/portfolio.model';
 
 /** Routes 20–25 and 28. Money is validated client-side as a courtesy; the backend stays the authority. */
@@ -23,8 +23,8 @@ export class PortfolioService {
   deposit(body: CashOperationRequest): Observable<PortfolioSummaryResponse> { return this.api.post('/deposit', body); }
   withdraw(body: CashOperationRequest): Observable<PortfolioSummaryResponse> { return this.api.post('/withdraw', body); }
   reset(): Observable<PortfolioSummaryResponse> { return this.api.post('/reset'); }
-  /** Instant simulated fill (`dev/execute`). Answers 404 when the server disabled dev endpoints. */
-  execute(body: DevExecutionRequest): Observable<TradeExecution> { return this.api.post('/dev/execute', body); }
+  /** Instant simulated fill (`dev/execute`): answers with the updated position. 404 when the server disabled dev endpoints. */
+  execute(body: DevExecutionRequest): Observable<PositionResponse> { return this.api.post('/dev/execute', body); }
   transactions(q: TransactionQuery): Observable<PageResponse<TransactionResponse>> {
     return this.api.get('/transactions', { type: q.type, ticker: q.ticker, from: q.from, to: q.to, page: q.page, size: q.size });
   }

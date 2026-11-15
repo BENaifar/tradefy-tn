@@ -1,1 +1,105 @@
-<span hidden></span>
+<tx-drawer [open]="open" kicker="TRADE TICKET" [title]="title" (closed)="close()">
+  <div class="sim"><span class="tx-pill warn" title="Fills are simulated instantly by the server: a stand-in for the trading module">SIMULATED EXECUTION</span></div>
+
+  <!-- Done -->
+  <div *ngIf="step === 'done' && result as r" class="done" role="status">
+    <p class="big">{{ filled?.side === 'BUY' ? 'Bought' : 'Sold' }} {{ filled?.quantity | qty }} {{ filled?.ticker }}</p>
+    <dl>
+      <div><dt>Shares held now</dt><dd class="num">{{ r.quantity | qty }}</dd></div>
+      <div><dt>Average cost</dt><dd class="num">{{ r.avgCost | money }}</dd></div>
+      <div><dt>Market value</dt><dd class="num">{{ r.marketValue | money }}</dd></div>
+      <div><dt>Realized P&amp;L</dt><dd class="num"><tx-delta [value]="r.realizedPnl" kind="money"></tx-delta></dd></div>
+    </dl>
+    <div class="row">
+      <button type="button" class="tx-btn primary" (click)="tradeAgain()">Trade again</button>
+      <button type="button" class="tx-btn" (click)="viewPosition()">View position</button>
+    </div>
+  </div>
+
+  <ng-container *ngIf="step !== 'done'">
+    <div class="tx-alert err" *ngIf="formError" role="alert">{{ formError }}</div>
+
+    <form [formGroup]="form" (ngSubmit)="review()" novalidate class="ticket">
+      <!-- 1. Instrument -->
+      <div class="tx-field">
+        <label>Instrument</label>
+        <ng-container *ngIf="!ticker; else picked">
+          <tx-ticker-search [navigate]="false" placeholder="Search a ticker" (picked)="pickTicker($event)"></tx-ticker-search>
+          <small class="tx-field-error" *ngIf="form.controls.ticker.touched">Pick an instrument from the list.</small>
+        </ng-container>
+        <ng-template #picked>
+          <div class="inst">
+            <div><strong>{{ ticker }}</strong><small class="muted">{{ quote?.name }}</small></div>
+            <div class="px num" *ngIf="quote">{{ quote.last | money: false }} <tx-delta [value]="quote.changePercent"></tx-delta></div>
+            <button type="button" class="tx-btn sm" (click)="clearTicker()">Change</button>
+          </div>
+          <small class="muted" *ngIf="quote">Limits {{ quote.lowerLimit | money: false }} – {{ quote.upperLimit | money: false }}</small>
+        </ng-template>
+      </div>
+
+      <!-- 2. Side -->
+      <div class="tx-field">
+        <label>Side</label>
+        <tx-segmented [options]="sideOptions" [value]="side" (valueChange)="setSide($event)" label="Buy or sell"></tx-segmented>
+      </div>
+
+      <!-- 3. Quantity -->
+      <div class="tx-field">
+        <label for="tt-qty">Quantity</label>
+        <input id="tt-qty" class="tx-input" type="text" inputmode="numeric" autocomplete="off" formControlName="quantity" (keydown)="blockNonDigits($event)" />
+        <small class="tx-field-error" *ngIf="controlError(form.controls.quantity) as e">{{ e }}</small>
+        <div class="chips" *ngIf="tickerKnown">
+          <ng-container *ngIf="side === 'BUY'; else sellChips">
+            <button type="button" class="tx-chip" (click)="chip(25)">25 %</button>
+            <button type="button" class="tx-chip" (click)="chip(50)">50 %</button>
+            <button type="button" class="tx-chip" (click)="chip(75)">75 %</button>
+            <button type="button" class="tx-chip" (click)="chip('max')">Max</button>
+          </ng-container>
+          <ng-template #sellChips>
+            <button type="button" class="tx-chip" (click)="chip(25)">25 %</button>
+            <button type="button" class="tx-chip" (click)="chip(50)">50 %</button>
+            <button type="button" class="tx-chip" (click)="chip('max')">All</button>
+          </ng-template>
+        </div>
+        <small class="muted" *ngIf="side === 'BUY'">Available cash {{ availableCash | money }}</small>
+        <small class="muted" *ngIf="side === 'SELL'">Available shares {{ sharesAvailable | qty }}</small>
+      </div>
+
+      <!-- 4. Price -->
+      <div class="tx-field">
+        <label for="tt-price">Price (optional)</label>
+        <input id="tt-price" class="tx-input" type="text" inputmode="decimal" autocomplete="off" placeholder="Empty = last price" formControlName="price" />
+        <small class="tx-field-error" *ngIf="controlError(form.controls.price) as e">{{ e }}</small>
+      </div>
+
+      <!-- 5. Estimate -->
+      <section class="est" aria-label="Estimate">
+        <span class="tx-kicker">ESTIMATE</span>
+        <p class="muted note">The final amount is computed by the server.</p>
+        <dl>
+          <div><dt>Price</dt><dd class="num">{{ est.price | money }}</dd></div>
+          <div><dt>Gross</dt><dd class="num">{{ est.gross | money }}</dd></div>
+          <div><dt>Fee (≈ 0.4 %)</dt><dd class="num">{{ est.fee | money }}</dd></div>
+          <div><dt>{{ side === 'BUY' ? 'Total cost' : 'Net proceeds' }}</dt><dd class="num strong">{{ est.total | money }}</dd></div>
+          <div><dt>Cash after</dt><dd class="num">{{ est.cashAfter | money }}</dd></div>
+          <div><dt>Shares after</dt><dd class="num">{{ est.sharesAfter | qty }}</dd></div>
+        </dl>
+        <div class="tx-alert warn" *ngIf="est.problem">{{ est.problem }}</div>
+      </section>
+
+      <!-- 6. Review -->
+      <div class="review" *ngIf="step === 'review'" role="group" aria-label="Review order">
+        <p>{{ reviewText }}</p>
+        <div class="row">
+          <button type="button" class="tx-btn" (click)="back()" [disabled]="pending">Back</button>
+          <button type="button" class="tx-btn" [class.buy]="side === 'BUY'" [class.sell]="side === 'SELL'" (click)="confirm()" [disabled]="pending">
+            <span *ngIf="pending" class="tx-spinner"></span> {{ side === 'BUY' ? 'Confirm buy' : 'Confirm sell' }}
+          </button>
+        </div>
+      </div>
+      <div class="row" *ngIf="step === 'form'">
+        <button type="submit" class="tx-btn" [class.buy]="side === 'BUY'" [class.sell]="side === 'SELL'" [disabled]="!canReview">Review {{ side === 'BUY' ? 'buy' : 'sell' }}</button>
+      </div>
+    </form>
+  </ng-container>
+</tx-drawer>

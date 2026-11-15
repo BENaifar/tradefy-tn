@@ -1,1 +1,20 @@
 @use '../../../../shared/ui/styles/index' as *;
+
+:host { display: block; }
+.block { display: block; margin-bottom: 18px; }
+.hero { display: flex; align-items: center; justify-content: space-between; gap: 28px; flex-wrap: wrap; margin-bottom: 14px; padding: 26px;
+  .main { display: flex; flex-direction: column; gap: 8px; }
+  .big { font-family: var(--font-heading); font-size: clamp(2rem, 4.4vw, 3.2rem); font-weight: 600; letter-spacing: -0.05em; text-align: left; }
+  .sub { display: flex; gap: 22px; flex-wrap: wrap; font-size: 0.78rem; color: var(--tx-muted); tx-delta { margin-left: 6px; } } }
+.splitbar { flex: 1; min-width: 260px; max-width: 520px;
+  .bar { display: flex; height: 10px; border-radius: 6px; overflow: hidden; background: rgba(255, 255, 255, 0.06); gap: 2px;
+    span { display: block; height: 100%; } }
+  .cash { background: var(--silver-bright); } .inv { background: var(--silver-dark); } .res { background: var(--warn); }
+  ul { display: flex; gap: 16px; flex-wrap: wrap; margin: 10px 0 0; padding: 0; list-style: none; font-size: 0.68rem; color: var(--tx-muted);
+    i { display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 6px; } b { color: #fff; font-weight: 500; margin-left: 4px; } } }
+.metrics { margin-bottom: 18px; }
+.cash { display: flex; flex-direction: column; gap: 14px; max-width: 520px; }
+.cashform { display: flex; flex-direction: column; gap: 14px; align-items: flex-start; .tx-field { width: 100%; } .hint { color: var(--tx-muted); font-size: 0.64rem; } }
+.danger { border-color: rgba(248, 113, 113, 0.25);
+  .toggle { display: flex; width: 100%; align-items: center; justify-content: space-between; border: 0; background: transparent; color: var(--tx-soft); cursor: pointer; padding: 0; }
+  .body { margin-top: 14px; display: flex; flex-direction: column; gap: 12px; align-items: flex-start; p { font-size: 0.74rem; line-height: 1.6; color: var(--tx-soft); max-width: 620px; } } }

@@ -1,1 +1,49 @@
-<span hidden></span>
+<tx-drawer [open]="!!ticker" kicker="POSITION" [title]="ticker ?? ''" (closed)="closed.emit()">
+  <tx-skeleton *ngIf="detail.loading && !detail.data" [rows]="6" [height]="20"></tx-skeleton>
+  <tx-error-state *ngIf="detail.error" [message]="detail.error.message" (retry)="detail.reload()"></tx-error-state>
+
+  <ng-container *ngIf="detail.data as d">
+    <div class="head">
+      <div><strong>{{ d.position.name }}</strong><small class="muted">{{ d.position.sector || '—' }}</small></div>
+      <span class="tx-pill" [class.silver]="d.position.status === 'OPEN'">{{ d.position.status }}</span>
+    </div>
+
+    <dl class="fields">
+      <div><dt>Quantity</dt><dd class="num">{{ d.position.quantity | qty }}<small *ngIf="d.position.reservedQuantity"> ({{ d.position.reservedQuantity | qty }} reserved)</small></dd></div>
+      <div><dt>Available</dt><dd class="num">{{ d.position.availableQuantity | qty }}</dd></div>
+      <div><dt>Average cost</dt><dd class="num">{{ d.position.avgCost | money }}</dd></div>
+      <div><dt>Total cost</dt><dd class="num">{{ d.position.totalCost | money }}</dd></div>
+      <div><dt>Last price</dt><dd class="num">{{ d.position.lastPrice | money }}</dd></div>
+      <div><dt>Market value</dt><dd class="num">{{ d.position.marketValue | money }}</dd></div>
+      <div><dt>Unrealized P&amp;L</dt><dd class="num"><tx-delta [value]="d.position.unrealizedPnl" kind="money"></tx-delta></dd></div>
+      <div><dt>Return</dt><dd class="num"><tx-delta [value]="d.position.unrealizedPnlPct"></tx-delta></dd></div>
+      <div><dt>Day change</dt><dd class="num"><tx-delta [value]="d.position.dayChangePct"></tx-delta></dd></div>
+      <div><dt>Realized P&amp;L</dt><dd class="num"><tx-delta [value]="d.position.realizedPnl" kind="money"></tx-delta></dd></div>
+      <div><dt>Weight</dt><dd class="num">{{ d.position.weightPct | pct: false }}</dd></div>
+      <div><dt>Holding days</dt><dd class="num">{{ d.position.holdingDays }}</dd></div>
+      <div><dt>Opened</dt><dd class="num">{{ d.position.openedAt | tunisTime }}</dd></div>
+      <div *ngIf="d.position.closedAt"><dt>Closed</dt><dd class="num">{{ d.position.closedAt | tunisTime }}</dd></div>
+    </dl>
+
+    <div class="actions">
+      <button type="button" class="tx-btn sm" (click)="trade('BUY')">Buy more</button>
+      <button type="button" class="tx-btn sm" *ngIf="d.position.status === 'OPEN'" (click)="trade('SELL')">Sell</button>
+      <a class="tx-btn sm" [routerLink]="['/chart', d.position.ticker]" (click)="closed.emit()">Open chart</a>
+    </div>
+
+    <h4 class="sub">Chart · 6 months</h4>
+    <tx-skeleton *ngIf="daily.loading && !daily.data" [rows]="3" [height]="24"></tx-skeleton>
+    <app-candle-chart *ngIf="daily.data?.candles?.length" [candles]="daily.data?.candles ?? []" interval="D1" [indicators]="[]" [trades]="trades"
+                      [showLegend]="true" [title]="d.position.ticker + ' · 1D'" [fitToken]="fitToken" [height]="240"></app-candle-chart>
+    <tx-empty-state *ngIf="daily.data && !daily.data.candles.length" title="No daily bars yet"></tx-empty-state>
+
+    <h4 class="sub">Transactions</h4>
+    <ul class="txs">
+      <li *ngFor="let t of d.transactions">
+        <div><span class="tx-pill" [class.pos]="t.type === 'BUY'" [class.neg]="t.type === 'SELL'">{{ t.type }}</span><small class="muted">{{ t.executedAt | tunisTime }}</small></div>
+        <div class="num"><span *ngIf="t.quantity">{{ t.quantity | qty }} × {{ t.price | money: false }}</span></div>
+        <div class="num"><tx-delta [value]="t.netAmount" kind="money"></tx-delta></div>
+      </li>
+    </ul>
+  </ng-container>
+</tx-drawer>

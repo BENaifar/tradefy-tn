@@ -1,0 +1,10 @@
+<div class="bar">
+  <tx-segmented [options]="rangeOptions" [value]="range" (valueChange)="setRange($event)" label="Equity curve range"></tx-segmented>
+  <tx-segmented [options]="modeOptions" [value]="mode" (valueChange)="setMode($event)" label="Curve shows"></tx-segmented>
+</div>
+<tx-skeleton *ngIf="perf.loading && !perf.data" [rows]="5" [height]="26"></tx-skeleton>
+<tx-error-state *ngIf="perf.error" [message]="perf.error.message" (retry)="perf.reload()"></tx-error-state>
+<tx-empty-state *ngIf="perf.data && !area.length" title="No points yet" message="Daily snapshots are taken at market close."></tx-empty-state>
+<app-candle-chart *ngIf="area.length" mode="area" [area]="area" [baseline]="baseline" [showLegend]="true"
+                  [title]="mode === 'value' ? 'Portfolio value (TND)' : 'Cumulative return (%)'" [fitToken]="fitToken" [height]="height"></app-candle-chart>
+<p class="note">Daily snapshots are taken at market close. New portfolios show today's live value only.</p>

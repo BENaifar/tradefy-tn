@@ -1,1 +1,12 @@
 @use '../../../../shared/ui/styles/index' as *;
+
+:host { display: block; }
+.filters { display: flex; flex-direction: column; gap: 12px; margin-bottom: 18px; }
+.chips { display: flex; gap: 6px; overflow-x: auto; .tx-chip { flex: none; } }
+.row { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; }
+.ticker { display: flex; gap: 6px; align-items: center; .tx-input { width: 140px; min-height: 34px; } }
+.size { display: flex; align-items: center; gap: 8px; margin-left: auto; select { width: 80px; min-height: 34px; } }
+.custom { display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap; .tx-field { width: 170px; } }
+.detail td { background: #0c0e0d; dl { display: flex; gap: 30px; flex-wrap: wrap; margin: 0; } dt { font: 0.52rem $mono; letter-spacing: 0.1em; text-transform: uppercase; color: var(--tx-muted); } dd { margin: 3px 0 0; font-size: 0.7rem; color: #fff; } }
+.pager { display: flex; align-items: center; justify-content: center; gap: 16px; margin-top: 16px; font-size: 0.7rem; color: var(--tx-soft); }
+@media (max-width: 768px) { .size { margin-left: 0; } .detail td { display: block; } }

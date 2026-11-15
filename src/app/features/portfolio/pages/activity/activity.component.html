@@ -2,6 +2,87 @@
   <div class="tx-container">
     <tx-module-header kicker="PORTFOLIO / ACTIVITY" title="Activity"></tx-module-header>
     <tx-module-tabs [tabs]="tabs"></tx-module-tabs>
-    <tx-empty-state title="Activity" message="This page is built in a later phase."></tx-empty-state>
+
+    <!-- Filters (kept in the URL query) -->
+    <section class="tx-panel filters" aria-label="Filters">
+      <div class="chips" role="group" aria-label="Transaction type" data-lenis-prevent>
+        <button *ngFor="let t of types" type="button" class="tx-chip" [class.active]="type === t" [attr.aria-pressed]="type === t" (click)="setType(t)">{{ t === 'ALL' ? 'All types' : badge(t) }}</button>
+      </div>
+      <div class="row">
+        <form class="ticker" (ngSubmit)="applyTicker()">
+          <input class="tx-input" type="search" maxlength="20" placeholder="Ticker" aria-label="Filter by ticker" [formControl]="tickerControl" />
+          <button type="submit" class="tx-btn sm">Apply</button>
+          <button type="button" class="tx-btn sm" *ngIf="ticker" (click)="clearTicker()">Clear</button>
+        </form>
+        <div class="chips" role="group" aria-label="Date range">
+          <button type="button" class="tx-chip" [class.active]="preset === 'all'" (click)="setPreset('all')">Any time</button>
+          <button type="button" class="tx-chip" [class.active]="preset === 'week'" (click)="setPreset('week')">This week</button>
+          <button type="button" class="tx-chip" [class.active]="preset === 'month'" (click)="setPreset('month')">This month</button>
+          <button type="button" class="tx-chip" [class.active]="preset === 'quarter'" (click)="setPreset('quarter')">Last 3 months</button>
+          <button type="button" class="tx-chip" [class.active]="preset === 'custom'" (click)="setPreset('custom')">Custom</button>
+        </div>
+        <div class="size">
+          <label for="act-size" class="tx-kicker">PER PAGE</label>
+          <select id="act-size" class="tx-input" [ngModel]="size" (ngModelChange)="setSize(+$event)">
+            <option *ngFor="let s of sizes" [ngValue]="s">{{ s }}</option>
+          </select>
+        </div>
+      </div>
+      <form *ngIf="preset === 'custom'" class="custom" [formGroup]="customForm" (ngSubmit)="applyCustom()">
+        <div class="tx-field"><label for="act-from">From</label><input id="act-from" class="tx-input" type="date" [max]="today" formControlName="from" /></div>
+        <div class="tx-field"><label for="act-to">To</label><input id="act-to" class="tx-input" type="date" [max]="today" formControlName="to" /></div>
+        <button type="submit" class="tx-btn sm" [disabled]="customForm.invalid">Apply</button>
+        <small class="tx-field-error" *ngIf="rangeError">{{ rangeError }}</small>
+      </form>
+    </section>
+
+    <tx-panel>
+      <div actions *ngIf="data.data?.content?.length"><button type="button" class="tx-btn sm" (click)="exportCsv()">Export this page (CSV)</button></div>
+      <tx-skeleton *ngIf="data.loading && !data.data" [rows]="6" [height]="26"></tx-skeleton>
+      <tx-error-state *ngIf="data.error" [message]="data.error.message" (retry)="data.reload()"></tx-error-state>
+      <tx-empty-state *ngIf="data.data && !data.data.content.length" [title]="filtered ? 'No transactions match these filters' : 'No transactions yet'"
+        [message]="filtered ? 'Try another type, ticker or date range.' : 'Your deposits and trades will be listed here.'">
+        <button *ngIf="filtered" type="button" class="tx-btn sm" (click)="clearFilters()">Clear filters</button>
+      </tx-empty-state>
+
+      <div class="tx-table-wrap" data-lenis-prevent *ngIf="data.data?.content?.length">
+        <table class="tx-table">
+          <thead>
+            <tr><th>Date</th><th>Type</th><th>Ticker</th><th class="num">Qty</th><th class="num hide-sm">Price</th><th class="num hide-sm">Gross</th><th class="num hide-sm">Fee</th><th class="num">Net</th><th class="num hide-sm">Realized P&amp;L</th><th class="num hide-sm">Cash after</th></tr>
+          </thead>
+          <tbody>
+            <ng-container *ngFor="let t of data.data?.content; trackBy: trackId">
+              <tr class="clickable" (click)="toggle(t.id)" [attr.aria-expanded]="expanded.has(t.id)">
+                <td data-label="Date">{{ t.executedAt | tunisTime }}</td>
+                <td data-label="Type"><span class="tx-pill" [class.pos]="t.type === 'BUY' || t.type === 'DEPOSIT'" [class.neg]="t.type === 'SELL' || t.type === 'WITHDRAWAL'">{{ badge(t.type) }}</span></td>
+                <td data-label="Ticker">{{ t.ticker || '—' }}</td>
+                <td data-label="Qty" class="num">{{ t.quantity | qty }}</td>
+                <td data-label="Price" class="num hide-sm">{{ t.price | money: false }}</td>
+                <td data-label="Gross" class="num hide-sm">{{ t.grossAmount | money: false }}</td>
+                <td data-label="Fee" class="num hide-sm">{{ t.fee | money: false }}</td>
+                <td data-label="Net" class="num"><tx-delta [value]="t.netAmount" kind="money"></tx-delta></td>
+                <td data-label="Realized P&L" class="num hide-sm"><tx-delta *ngIf="t.realizedPnl !== null" [value]="t.realizedPnl" kind="money"></tx-delta><span *ngIf="t.realizedPnl === null">—</span></td>
+                <td data-label="Cash after" class="num hide-sm">{{ t.cashBalanceAfter | money: false }}</td>
+              </tr>
+              <tr *ngIf="expanded.has(t.id)" class="detail">
+                <td colspan="10">
+                  <dl>
+                    <div><dt>Order ID</dt><dd class="mono">{{ t.orderId || '—' }}</dd></div>
+                    <div><dt>Execution ID</dt><dd class="mono">{{ t.executionId || '—' }}</dd></div>
+                    <div><dt>Note</dt><dd>{{ t.note || '—' }}</dd></div>
+                  </dl>
+                </td>
+              </tr>
+            </ng-container>
+          </tbody>
+        </table>
+      </div>
+
+      <nav class="pager" *ngIf="data.data && data.data.totalPages > 0" aria-label="Pagination">
+        <button type="button" class="tx-btn sm" [disabled]="page <= 0" (click)="goPage(page - 1)">Previous</button>
+        <span>Page {{ data.data.page + 1 }} of {{ data.data.totalPages }} · {{ data.data.totalElements | qty }} transaction{{ data.data.totalElements === 1 ? "" : "s" }}</span>
+        <button type="button" class="tx-btn sm" [disabled]="page + 1 >= data.data.totalPages" (click)="goPage(page + 1)">Next</button>
+      </nav>
+    </tx-panel>
   </div>
 </div>

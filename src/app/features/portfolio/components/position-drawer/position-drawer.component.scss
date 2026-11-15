@@ -1,1 +1,12 @@
-:host { display: block; }
+@use '../../../../shared/ui/styles/index' as *;
+
+:host { display: block; @include tx-tokens; }
+.head { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 14px; strong { display: block; font-size: 0.95rem; } }
+.fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 16px; margin: 0 0 16px;
+  dt { font: 0.52rem $mono; letter-spacing: 0.1em; text-transform: uppercase; color: var(--tx-muted); }
+  dd { margin: 3px 0 0; font-size: 0.78rem; text-align: left; small { color: var(--tx-muted); } } }
+.actions { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 18px; }
+.sub { margin: 16px 0 8px; font: 0.56rem $mono; letter-spacing: 0.1em; text-transform: uppercase; color: var(--tx-muted); font-weight: 400; }
+.txs { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column;
+  li { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) auto; gap: 8px; align-items: center; padding: 9px 0; border-bottom: 1px solid var(--tx-border-soft); font-size: 0.7rem;
+    small { display: block; margin-top: 3px; } .num { text-align: right; } } }
