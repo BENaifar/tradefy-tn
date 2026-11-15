@@ -94,7 +94,8 @@ export class CandleChartComponent implements AfterViewInit, OnChanges, OnDestroy
   async ngAfterViewInit(): Promise<void> {
     try {
       this.lib = await import('lightweight-charts');
-    } catch {
+    } catch (e) {
+      console.error('[candle-chart] lightweight-charts failed to load', e);
       this.failed = true;
       this.cdr.markForCheck();
       return;

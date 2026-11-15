@@ -19,5 +19,5 @@
   </div>
 
   <div class="state" *ngIf="!ready && !failed" role="status">Loading chart…</div>
-  <div class="state err" *ngIf="failed" role="alert">The chart library could not be loaded.</div>
+  <div class="state err" *ngIf="failed" role="alert">The chart library could not be loaded. Run npm install, restart ng serve and hard-refresh.</div>
 </div>
