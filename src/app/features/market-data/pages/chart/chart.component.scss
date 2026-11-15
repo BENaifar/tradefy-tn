@@ -1,1 +1,25 @@
 @use '../../../../shared/ui/styles/index' as *;
+
+:host { display: block; }
+.toolbar { display: flex; flex-direction: column; gap: 10px; margin-bottom: 12px; }
+.tb { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.ts { width: 230px; flex: none; }
+.px { display: flex; align-items: baseline; gap: 10px; font-size: 0.85rem; strong { font-family: var(--font-heading); font-size: 1.1rem; } }
+.banners { display: flex; flex-direction: column; gap: 8px; margin-bottom: 8px; .tx-pill { align-self: flex-start; } .tx-alert { margin: 0; } }
+.layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px;
+  &.with-panel { grid-template-columns: minmax(0, 1fr) 280px; } }
+.chartwrap { position: relative; padding: 8px; min-width: 0; }
+.loading { position: absolute; inset: 20px; z-index: 6; pointer-events: none; }
+.side { min-width: 0; }
+.panel-toggle { display: none; }
+@media (min-width: 1051px) { .side:not(.open) { display: none; } }
+@media (max-width: 1050px) {
+  .layout, .layout.with-panel { grid-template-columns: minmax(0, 1fr); }
+  .panel-toggle { display: inline-flex; }
+  // the indicator panel becomes a bottom sheet
+  .side { position: fixed; z-index: 900; left: 0; right: 0; bottom: 0; max-height: 72vh; overflow-y: auto; padding: 10px; background: #050606; border-top: 1px solid var(--silver-line);
+    transform: translateY(105%); visibility: hidden; transition: transform 220ms ease, visibility 0s linear 220ms;
+    &.open { transform: none; visibility: visible; transition: transform 220ms ease; } }
+}
+@media (prefers-reduced-motion: reduce) { .side, .side.open { transition: none; } }
+@media (max-width: 768px) { .ts { width: 100%; } }

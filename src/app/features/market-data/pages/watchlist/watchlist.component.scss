@@ -1,1 +1,16 @@
 @use '../../../../shared/ui/styles/index' as *;
+
+:host { display: block; }
+.bar { display: flex; align-items: flex-end; gap: 14px; flex-wrap: wrap; margin-bottom: 18px; }
+.add { display: flex; flex-direction: column; gap: 6px; width: 300px; max-width: 100%; }
+.views { display: flex; gap: 6px; }
+.cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.card { display: flex; flex-direction: column; gap: 10px; padding: 18px;
+  header { display: flex; align-items: center; justify-content: space-between; strong { font-size: 0.95rem; } }
+  .nm { margin-top: -6px; }
+  .px { display: flex; align-items: baseline; justify-content: space-between; strong { font-family: var(--font-heading); font-size: 1.4rem; letter-spacing: -0.04em; } }
+  footer { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 4px; } }
+.range { min-width: 150px; }
+.tx-table td.num .tx-btn { margin-left: 4px; }
+@media (max-width: 1050px) { .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 768px) { .cards { grid-template-columns: 1fr; } }

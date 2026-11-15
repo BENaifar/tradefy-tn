@@ -1,1 +1,17 @@
 @use '../../../../shared/ui/styles/index' as *;
+
+:host { display: block; }
+.strip { margin-bottom: 18px; }
+.block { display: block; margin-bottom: 18px; }
+.movers { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; }
+.mover { display: flex; flex-direction: column; gap: 4px; padding: 12px; border: 1px solid var(--tx-border); border-radius: 8px; background: var(--tx-panel-2); font-size: 0.7rem; transition: 160ms ease;
+  &:hover { border-color: var(--silver-line); }
+  strong { font-size: 0.8rem; }
+  .nm { color: var(--tx-muted); font-size: 0.6rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } }
+.tools { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.search { width: 220px; min-height: 34px; }
+.chips { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 8px; scrollbar-width: thin; .tx-chip { flex: none; } }
+.actions { white-space: nowrap; .tx-btn { margin-left: 4px; } }
+.tx-table .num.actions { text-align: right; }
+@media (max-width: 1050px) { .movers { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 768px) { .search { width: 100%; } .movers { grid-template-columns: 1fr; } }

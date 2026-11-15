@@ -73,3 +73,15 @@ export interface IndicatorResult { code: string; params: Record<string, number>;
 
 export interface SyncResult { received: number; newInstruments: number; updated: number; provider: string; at: string; }
 export interface CsvImportResult { totalRows: number; inserted: number; updated: number; errors: string[]; }
+
+/** One indicator the user added to the chart (SMA 20 and SMA 50 can coexist). Built from the backend catalog. */
+export interface IndicatorInstance {
+  id: string;
+  code: string;
+  params: Record<string, number>;
+  color: string;
+  visible: boolean;
+  status: 'loading' | 'ok' | 'error';
+  error: string;
+  result: IndicatorResult | null;
+}

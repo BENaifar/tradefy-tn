@@ -2,6 +2,66 @@
   <div class="tx-container">
     <tx-module-header kicker="MARKETS / WATCHLIST" title="Watchlist"></tx-module-header>
     <tx-module-tabs [tabs]="tabs"></tx-module-tabs>
-    <tx-empty-state title="Watchlist" message="This page is built in a later phase."></tx-empty-state>
+
+    <div class="bar">
+      <div class="add">
+        <span class="tx-kicker">ADD A STOCK</span>
+        <tx-ticker-search [navigate]="false" placeholder="Search ticker to add" (picked)="add($event)"></tx-ticker-search>
+      </div>
+      <div class="tx-spacer"></div>
+      <div class="views" role="group" aria-label="View">
+        <button type="button" class="tx-btn sm" [class.active]="view === 'cards'" [attr.aria-pressed]="view === 'cards'" (click)="setView('cards')">Cards</button>
+        <button type="button" class="tx-btn sm" [class.active]="view === 'table'" [attr.aria-pressed]="view === 'table'" (click)="setView('table')">Table</button>
+      </div>
+    </div>
+
+    <tx-skeleton *ngIf="list.loading && !list.data" [rows]="5" [height]="26"></tx-skeleton>
+    <tx-error-state *ngIf="list.error" [message]="list.error.message" (retry)="list.reload()"></tx-error-state>
+    <tx-empty-state *ngIf="list.data && !list.data.length" title="Your watchlist is empty" message="Star stocks on the Markets page or add one above to follow them here.">
+      <a class="tx-btn primary" routerLink="/markets">Browse markets</a>
+    </tx-empty-state>
+
+    <!-- Cards -->
+    <div class="cards" *ngIf="list.data?.length && view === 'cards'">
+      <article class="tx-panel card" *ngFor="let it of list.data; trackBy: trackTicker">
+        <header>
+          <a [routerLink]="['/markets', it.ticker]"><strong>{{ it.ticker }}</strong></a>
+          <span class="tx-pill">{{ it.sector || '—' }}</span>
+        </header>
+        <small class="muted nm">{{ it.name }}</small>
+        <div class="px"><strong class="num">{{ q(it)?.last | money: false }}</strong><tx-delta [value]="q(it)?.changePercent"></tx-delta></div>
+        <tx-range-bar label="Day range" [min]="q(it)?.low" [max]="q(it)?.high" [value]="q(it)?.last"></tx-range-bar>
+        <small class="muted">Added {{ it.addedAt | tunisTime: 'date' }}</small>
+        <footer>
+          <a class="tx-btn sm" [routerLink]="['/chart', it.ticker]">Chart</a>
+          <button type="button" class="tx-btn sm" (click)="trade(it.ticker)">Trade</button>
+          <button type="button" class="tx-btn sm danger" (click)="remove(it)" [attr.aria-label]="'Remove ' + it.ticker + ' from watchlist'">Remove</button>
+        </footer>
+      </article>
+    </div>
+
+    <!-- Table -->
+    <div class="tx-panel" *ngIf="list.data?.length && view === 'table'">
+      <div class="tx-table-wrap" data-lenis-prevent>
+        <table class="tx-table">
+          <thead><tr><th>Ticker</th><th class="hide-sm">Sector</th><th class="num">Last</th><th class="num">Change</th><th class="hide-sm">Day range</th><th class="hide-sm">Added</th><th class="num">Actions</th></tr></thead>
+          <tbody>
+            <tr *ngFor="let it of list.data; trackBy: trackTicker">
+              <td data-label="Ticker" class="ticker-cell"><a [routerLink]="['/markets', it.ticker]"><strong>{{ it.ticker }}</strong></a><small>{{ it.name }}</small></td>
+              <td data-label="Sector" class="hide-sm">{{ it.sector || '—' }}</td>
+              <td data-label="Last" class="num">{{ q(it)?.last | money: false }}</td>
+              <td data-label="Change" class="num"><tx-delta [value]="q(it)?.changePercent"></tx-delta></td>
+              <td data-label="Day range" class="hide-sm range"><tx-range-bar [min]="q(it)?.low" [max]="q(it)?.high" [value]="q(it)?.last"></tx-range-bar></td>
+              <td data-label="Added" class="hide-sm">{{ it.addedAt | tunisTime: 'date' }}</td>
+              <td data-label="Actions" class="num">
+                <a class="tx-btn sm" [routerLink]="['/chart', it.ticker]">Chart</a>
+                <button type="button" class="tx-btn sm" (click)="trade(it.ticker)">Trade</button>
+                <button type="button" class="tx-btn sm danger" (click)="remove(it)" [attr.aria-label]="'Remove ' + it.ticker + ' from watchlist'">Remove</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
   </div>
 </div>

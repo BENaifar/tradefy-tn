@@ -1,1 +1,21 @@
 @use '../../../../shared/ui/styles/index' as *;
+
+:host { display: block; }
+.idline { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 8px; font-size: 0.78rem; color: var(--tx-soft);
+  .ar { font-size: 0.85rem; } }
+.hero { display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; flex-wrap: wrap; margin-bottom: 18px; padding: 24px;
+  .price { display: flex; flex-direction: column; gap: 6px; }
+  .big { font-family: var(--font-heading); font-size: clamp(2rem, 4vw, 3rem); font-weight: 600; letter-spacing: -0.05em; text-align: left; border-radius: 6px; }
+  .chg { display: flex; gap: 14px; font-size: 0.8rem; }
+  .buttons { display: flex; gap: 8px; flex-wrap: wrap; } }
+.cols { align-items: start; }
+.stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px 18px; margin: 0 0 18px;
+  dt { font: 0.54rem $mono; letter-spacing: 0.1em; text-transform: uppercase; color: var(--tx-muted); }
+  dd { margin-top: 4px; font-size: 0.82rem; font-weight: 500; text-align: left; }
+  &.one { grid-template-columns: 1fr; gap: 10px; margin-bottom: 14px;
+    div { display: flex; justify-content: space-between; border-bottom: 1px solid var(--tx-border-soft); padding-bottom: 8px; }
+    dd { margin: 0; } } }
+.ranges { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+.hist { max-height: 360px; overflow-y: auto; }
+.small { font-size: 0.74rem; line-height: 1.6; }
+@media (max-width: 768px) { .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); } .ranges { grid-template-columns: 1fr; } }

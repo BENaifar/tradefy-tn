@@ -1,7 +1,116 @@
 <div class="tx-page">
   <div class="tx-container">
-    <tx-module-header kicker="MARKETS / INSTRUMENT" title="Instrument"></tx-module-header>
+    <tx-module-header [kicker]="'MARKETS / ' + ticker" [title]="ticker">
+      <div class="idline" *ngIf="instrument.data as i">
+        <span class="nm">{{ i.name }}</span>
+        <span *ngIf="i.arabName" class="ar" dir="rtl" lang="ar">{{ i.arabName }}</span>
+        <span class="tx-pill">{{ i.sector || 'No sector' }}</span>
+        <span class="tx-pill">{{ i.assetClass }}</span>
+      </div>
+    </tx-module-header>
     <tx-module-tabs [tabs]="tabs"></tx-module-tabs>
-    <tx-empty-state title="Instrument" message="This page is built in a later phase."></tx-empty-state>
+
+    <tx-skeleton *ngIf="instrument.loading && !instrument.data" [rows]="5" [height]="22"></tx-skeleton>
+
+    <tx-empty-state *ngIf="instrument.isNotFound" [title]="'We couldn\'t find ' + ticker" message="Check the spelling or search for another instrument.">
+      <tx-ticker-search></tx-ticker-search>
+    </tx-empty-state>
+    <tx-error-state *ngIf="instrument.error && !instrument.isNotFound" [message]="instrument.error.message" (retry)="instrument.reload()"></tx-error-state>
+
+    <ng-container *ngIf="instrument.data as i">
+      <!-- Live price + actions -->
+      <section class="tx-panel hero">
+        <div class="price">
+          <span class="tx-kicker">LAST PRICE · {{ i.currency }}</span>
+          <strong class="big num" [class.flash-up]="flash === 'up'" [class.flash-down]="flash === 'down'">{{ q?.last | money: false }}</strong>
+          <div class="chg"><tx-delta [value]="q?.changePercent"></tx-delta> <tx-delta [value]="q?.change" kind="money"></tx-delta></div>
+          <small class="muted" *ngIf="q">Updated {{ q.updatedAt | tunisTime }} Tunis time</small>
+        </div>
+        <div class="buttons">
+          <button type="button" class="tx-btn" [class.active]="watched" [disabled]="watchPending" [attr.aria-pressed]="watched" (click)="toggleWatch()">{{ watched ? '★ Watching' : '☆ Watch' }}</button>
+          <a class="tx-btn" [routerLink]="['/chart', ticker]">Open full chart</a>
+          <button type="button" class="tx-btn primary" (click)="trade('BUY')">Buy</button>
+          <button type="button" class="tx-btn" (click)="trade('SELL')">Sell</button>
+        </div>
+      </section>
+
+      <div class="tx-grid-main cols">
+        <div class="tx-stack">
+          <!-- Key stats (routes 6, 9) -->
+          <tx-panel kicker="KEY STATS" title="Today's session">
+            <dl class="stats" *ngIf="q; else noQuote">
+              <div><dt>Open</dt><dd class="num">{{ q.open | money: false }}</dd></div>
+              <div><dt>High</dt><dd class="num">{{ q.high | money: false }}</dd></div>
+              <div><dt>Low</dt><dd class="num">{{ q.low | money: false }}</dd></div>
+              <div><dt>Previous close</dt><dd class="num">{{ q.previousClose | money: false }}</dd></div>
+              <div><dt>Volume</dt><dd class="num">{{ q.volume | qty }}</dd></div>
+              <div><dt>Turnover</dt><dd class="num">{{ q.turnover | money }}</dd></div>
+              <div><dt>Bid × qty</dt><dd class="num">{{ q.bid | money: false }} × {{ q.bidQty | qty }}</dd></div>
+              <div><dt>Ask × qty</dt><dd class="num">{{ q.ask | money: false }} × {{ q.askQty | qty }}</dd></div>
+            </dl>
+            <ng-template #noQuote><tx-empty-state title="No quote yet" message="Prices appear once the market has traded this instrument."></tx-empty-state></ng-template>
+            <div class="ranges" *ngIf="q">
+              <tx-range-bar label="Day range" [min]="q.low" [max]="q.high" [value]="q.last"></tx-range-bar>
+              <tx-range-bar label="Limit band" [min]="q.lowerLimit" [max]="q.upperLimit" [value]="q.last"></tx-range-bar>
+            </div>
+          </tx-panel>
+
+          <!-- Embedded chart (D1, 6 months) with the user's trades -->
+          <tx-panel kicker="CHART" title="Daily candles · 6 months">
+            <div actions><a class="tx-btn sm" [routerLink]="['/chart', ticker]">Full chart</a></div>
+            <tx-skeleton *ngIf="daily.loading && !daily.data" [rows]="5" [height]="22"></tx-skeleton>
+            <tx-error-state *ngIf="daily.error" [message]="daily.error.message" (retry)="daily.reload()"></tx-error-state>
+            <tx-empty-state *ngIf="daily.data && !daily.data.candles.length" title="No daily bars yet" message="Daily candles appear once a session has closed or history was imported."></tx-empty-state>
+            <app-candle-chart *ngIf="daily.data?.candles?.length" [candles]="daily.data?.candles ?? []" interval="D1" [indicators]="[]" [trades]="trades"
+                              [showLegend]="true" [showTrades]="true" [title]="ticker + ' · 1D'" [fitToken]="fitToken" [height]="340"></app-candle-chart>
+          </tx-panel>
+
+          <!-- History (route 11), collapsed -->
+          <tx-panel kicker="HISTORY" [title]="'Daily bars · ' + from + ' → ' + today">
+            <div actions>
+              <button *ngIf="showHistory && history.data?.length" type="button" class="tx-btn sm" (click)="downloadHistory()">Download CSV</button>
+              <button type="button" class="tx-btn sm" (click)="toggleHistory()" [attr.aria-expanded]="showHistory">{{ showHistory ? 'Hide' : 'Show' }} history</button>
+            </div>
+            <ng-container *ngIf="showHistory">
+              <tx-skeleton *ngIf="history.loading" [rows]="5"></tx-skeleton>
+              <tx-error-state *ngIf="history.error" [message]="history.error.message" (retry)="history.reload()"></tx-error-state>
+              <tx-empty-state *ngIf="history.data && !history.data.length" title="No daily bars" message="Daily bars are written when a session closes, or imported by an admin."></tx-empty-state>
+              <div class="tx-table-wrap hist" data-lenis-prevent *ngIf="history.data?.length">
+                <table class="tx-table">
+                  <thead><tr><th>Date</th><th class="num">Open</th><th class="num">High</th><th class="num">Low</th><th class="num">Close</th><th class="num">Volume</th></tr></thead>
+                  <tbody>
+                    <tr *ngFor="let b of history.data">
+                      <td data-label="Date">{{ b.date | tunisTime: 'date' }}</td>
+                      <td data-label="Open" class="num">{{ b.open | money: false }}</td>
+                      <td data-label="High" class="num">{{ b.high | money: false }}</td>
+                      <td data-label="Low" class="num">{{ b.low | money: false }}</td>
+                      <td data-label="Close" class="num">{{ b.close | money: false }}</td>
+                      <td data-label="Volume" class="num">{{ b.volume | qty }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </ng-container>
+          </tx-panel>
+        </div>
+
+        <aside class="tx-stack">
+          <!-- Your position (route 27) -->
+          <tx-panel *ngIf="position as d" kicker="YOUR POSITION" [title]="d.position.quantity + ' shares'">
+            <dl class="stats one">
+              <div><dt>Average cost</dt><dd class="num">{{ d.position.avgCost | money }}</dd></div>
+              <div><dt>Market value</dt><dd class="num">{{ d.position.marketValue | money }}</dd></div>
+              <div><dt>Unrealized P&amp;L</dt><dd class="num"><tx-delta [value]="d.position.unrealizedPnl" kind="money"></tx-delta></dd></div>
+              <div><dt>Return</dt><dd class="num"><tx-delta [value]="d.position.unrealizedPnlPct"></tx-delta></dd></div>
+              <div><dt>Weight</dt><dd class="num">{{ d.position.weightPct | pct: false }}</dd></div>
+            </dl>
+            <a class="tx-btn sm" routerLink="/portfolio/positions">Open positions</a>
+          </tx-panel>
+          <tx-panel *ngIf="!position" kicker="YOUR POSITION" title="Not held">
+            <p class="muted small">You don't hold {{ ticker }} yet. Use Buy to open a position.</p>
+          </tx-panel>
+        </aside>
+      </div>
+    </ng-container>
   </div>
 </div>

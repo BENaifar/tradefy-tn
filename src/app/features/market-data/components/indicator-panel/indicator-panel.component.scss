@@ -1,1 +1,24 @@
-:host { display: block; }
+@use '../../../../shared/ui/styles/index' as *;
+
+:host { display: block; @include tx-tokens; }
+.ip { display: flex; flex-direction: column; gap: 12px; padding: 16px; border: 1px solid var(--tx-border); border-radius: 11px; background: var(--tx-panel); }
+header { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; h3 { margin-top: 4px; font-size: 0.88rem; font-weight: 600; } }
+.hint { margin: 0; color: var(--tx-muted); font-size: 0.64rem; line-height: 1.5; }
+.row { display: flex; gap: 6px; flex-wrap: wrap; }
+.picker { display: flex; flex-direction: column; gap: 8px; }
+.groups { display: flex; flex-direction: column; gap: 6px; max-height: 300px; overflow-y: auto; }
+.grp { margin-top: 4px; }
+.opt { display: flex; flex-direction: column; gap: 3px; padding: 9px 10px; border: 1px solid var(--tx-border); border-radius: 7px; background: var(--tx-panel-2); color: #fff; text-align: left; cursor: pointer;
+  strong { font-size: 0.72rem; small { color: var(--tx-muted); font: 0.54rem $mono; margin-left: 4px; } }
+  span { color: var(--tx-muted); font-size: 0.62rem; line-height: 1.4; }
+  &:hover:not(:disabled) { border-color: var(--silver-line); }
+  &:disabled { opacity: 0.4; cursor: not-allowed; } }
+.params { display: flex; flex-direction: column; gap: 10px; padding: 12px; border: 1px solid var(--silver-line); border-radius: 8px; background: var(--tx-panel-2); strong { font-size: 0.78rem; } }
+.active { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 8px;
+  li { padding: 8px 10px; border: 1px solid var(--tx-border); border-radius: 8px; background: var(--tx-panel-2); &.off .lbl { opacity: 0.45; text-decoration: line-through; } }
+  .r1 { display: flex; align-items: center; gap: 8px; }
+  .sw { width: 20px; height: 20px; padding: 0; border: 1px solid var(--tx-border); border-radius: 4px; background: transparent; cursor: pointer; }
+  .lbl { flex: 1; min-width: 0; font-size: 0.74rem; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .tools { display: flex; gap: 4px; }
+  .status { display: flex; align-items: center; gap: 6px; margin-top: 6px; font-size: 0.62rem; color: var(--tx-muted); &.bad { color: #fca5a5; } } }
+.bulk { display: flex; flex-direction: column; gap: 8px; padding-top: 10px; border-top: 1px solid var(--tx-border); }

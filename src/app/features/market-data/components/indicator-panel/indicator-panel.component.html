@@ -1,1 +1,76 @@
-<span hidden></span>
+<section class="ip" aria-label="Indicators">
+  <header>
+    <div><span class="tx-kicker">INDICATORS</span><h3>{{ instances.length }} / {{ maxIndicators }} active</h3></div>
+    <button type="button" class="tx-btn sm primary" (click)="startPick()" [disabled]="!catalog || atLimit || catalogLoading">+ Add indicator</button>
+  </header>
+  <p class="hint" *ngIf="atLimit">Limit reached: {{ maxIndicators }} indicators (max {{ maxPanes }} separate panes).</p>
+
+  <tx-skeleton *ngIf="catalogLoading && !catalog" [rows]="3"></tx-skeleton>
+  <tx-error-state *ngIf="catalogError" [message]="catalogError" (retry)="retryCatalog.emit()"></tx-error-state>
+
+  <!-- Picker (built only from the catalog) -->
+  <div class="picker" *ngIf="picking && catalog && !selected">
+    <input class="tx-input" type="search" maxlength="50" placeholder="Search indicators" aria-label="Search indicators" [(ngModel)]="query" />
+    <div class="groups" data-lenis-prevent>
+      <ng-container *ngIf="overlays.length">
+        <span class="grp tx-kicker">On price</span>
+        <button *ngFor="let d of overlays" type="button" class="opt" (click)="choose(d)"><strong>{{ d.name }} <small>{{ d.code }}</small></strong><span>{{ d.description }}</span></button>
+      </ng-container>
+      <ng-container *ngIf="panes.length">
+        <span class="grp tx-kicker">Separate pane</span>
+        <button *ngFor="let d of panes" type="button" class="opt" [disabled]="blocked(d)" [attr.title]="blocked(d) ? 'Maximum ' + maxPanes + ' separate panes' : null" (click)="choose(d)"><strong>{{ d.name }} <small>{{ d.code }}</small></strong><span>{{ d.description }}</span></button>
+      </ng-container>
+      <p class="hint" *ngIf="!overlays.length && !panes.length">No indicator matches “{{ query }}”.</p>
+    </div>
+    <button type="button" class="tx-btn sm" (click)="cancel()">Cancel</button>
+  </div>
+
+  <!-- Parameters form, generated from def.params -->
+  <form class="params" *ngIf="selected" [formGroup]="form" (ngSubmit)="submit()">
+    <strong>{{ editingId ? 'Edit' : 'Add' }} {{ selected.name }}</strong>
+    <p class="hint">{{ selected.description }}</p>
+    <div class="tx-field" *ngFor="let p of selected.params">
+      <label [for]="'ip-' + p.name">{{ p.label }}</label>
+      <input class="tx-input" [id]="'ip-' + p.name" type="number" inputmode="decimal" [formControlName]="p.name" [min]="p.min" [max]="p.max" [step]="step(p)" />
+      <small class="hint">Between {{ p.min }} and {{ p.max }}</small>
+      <small class="tx-field-error" *ngIf="err(p) as e">{{ e }}</small>
+    </div>
+    <div class="row">
+      <button type="submit" class="tx-btn sm primary" [disabled]="form.invalid">{{ editingId ? 'Save' : 'Add' }}</button>
+      <button type="button" class="tx-btn sm" (click)="cancel()">Cancel</button>
+    </div>
+  </form>
+
+  <!-- Active list -->
+  <ul class="active" *ngIf="instances.length">
+    <li *ngFor="let i of instances; trackBy: trackId" [class.off]="!i.visible">
+      <div class="r1">
+        <input type="color" class="sw" [value]="i.color" (change)="recolor.emit({ id: i.id, color: $any($event.target).value })" [attr.aria-label]="'Colour of ' + label(i)" />
+        <span class="lbl">{{ label(i) }}</span>
+        <span class="tools">
+          <button type="button" class="tx-btn sm icon" (click)="toggle.emit(i.id)" [attr.aria-pressed]="i.visible" [attr.aria-label]="(i.visible ? 'Hide ' : 'Show ') + label(i)" [title]="i.visible ? 'Hide' : 'Show'">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+              <path *ngIf="i.visible" d="M2 12S6 5 12 5S22 12 22 12S18 19 12 19S2 12 2 12ZM12 9A3 3 0 1 0 12 15A3 3 0 0 0 12 9Z" />
+              <path *ngIf="!i.visible" d="M3 3L21 21M10 6A10 10 0 0 1 12 5C18 5 22 12 22 12A17 17 0 0 1 19 15.5M6.5 7.5A17 17 0 0 0 2 12S6 19 12 19A10 10 0 0 0 15 18.3" />
+            </svg>
+          </button>
+          <button type="button" class="tx-btn sm icon" (click)="edit(i)" [attr.aria-label]="'Edit ' + label(i)" title="Edit">✎</button>
+          <button type="button" class="tx-btn sm icon" (click)="remove.emit(i.id)" [attr.aria-label]="'Remove ' + label(i)" title="Remove">×</button>
+        </span>
+      </div>
+      <div class="status" *ngIf="i.status === 'loading'"><span class="tx-spinner"></span> Computing…</div>
+      <div class="status bad" *ngIf="i.status === 'error'" role="alert">{{ i.error }}</div>
+    </li>
+  </ul>
+  <p class="hint" *ngIf="!instances.length && !picking && catalog">No indicators yet. Add one, or start from a preset.</p>
+
+  <div class="bulk" *ngIf="catalog">
+    <div class="row">
+      <button type="button" class="tx-btn sm" (click)="hideAll.emit()" [disabled]="!anyVisible">Hide all</button>
+      <button type="button" class="tx-btn sm" (click)="showAll.emit()" [disabled]="!anyHidden">Show all</button>
+      <button type="button" class="tx-btn sm danger" (click)="clear.emit()" [disabled]="!instances.length">Clear</button>
+    </div>
+    <span class="tx-kicker">PRESETS</span>
+    <div class="row"><button *ngFor="let p of presets" type="button" class="tx-chip" (click)="preset.emit(p)">{{ p }}</button></div>
+  </div>
+</section>

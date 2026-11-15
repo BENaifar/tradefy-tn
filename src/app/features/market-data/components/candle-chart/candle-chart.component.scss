@@ -1,1 +1,15 @@
-:host { display: block; }
+@use '../../../../shared/ui/styles/index' as *;
+
+:host { display: block; position: relative; @include tx-tokens; }
+.box { position: relative; width: 100%; min-height: 220px; background: transparent;
+  &:fullscreen { height: 100vh !important; background: #030303; padding: 12px; } }
+.surface { position: absolute; inset: 0; }
+.legend { position: absolute; z-index: 5; top: 8px; left: 10px; right: 70px; pointer-events: none; display: flex; flex-direction: column; gap: 4px;
+  font-size: 0.68rem; color: var(--tx-soft); text-shadow: 0 0 6px #000;
+  .line1, .inds, .trades { display: flex; flex-wrap: wrap; gap: 4px 14px; align-items: center; }
+  .t { color: #fff; font-size: 0.74rem; font-family: $mono; letter-spacing: 0.06em; }
+  b { color: #fff; font-weight: 500; }
+  .pos b { color: var(--pos); } .neg b { color: var(--neg); }
+  .inds i { display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 5px; }
+  .trades span { color: var(--silver-bright); border: 1px solid var(--silver-line); border-radius: 4px; padding: 1px 6px; } }
+.state { position: absolute; inset: 0; display: grid; place-items: center; color: var(--tx-muted); font-size: 0.74rem; &.err { color: #fca5a5; } }

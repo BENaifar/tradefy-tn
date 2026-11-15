@@ -2,6 +2,92 @@
   <div class="tx-container">
     <tx-module-header kicker="MARKETS" title="Markets"></tx-module-header>
     <tx-module-tabs [tabs]="tabs"></tx-module-tabs>
-    <tx-empty-state title="Markets" message="This page is built in a later phase."></tx-empty-state>
+
+    <!-- Market status strip (route 4) -->
+    <section class="tx-grid-4 strip" aria-label="Market status">
+      <ng-container *ngIf="status$ | async as s; else statusLoading">
+        <tx-metric-card kicker="SESSION" [value]="s.open ? 'Open' : 'Closed'" [sub]="s.sessionOpen.slice(0, 5) + ' – ' + s.sessionClose.slice(0, 5) + ' ' + s.zone"></tx-metric-card>
+        <tx-metric-card kicker="INSTRUMENTS" [value]="s.instrumentsCount + ''" sub="Listed on BVMT"></tx-metric-card>
+        <tx-metric-card kicker="LAST SYNC" [value]="s.lastSyncAt | tunisTime: 'time'" [sub]="(s.lastSyncAt | tunisTime: 'date') + ' Tunis time'"></tx-metric-card>
+        <tx-metric-card kicker="PROVIDER" [value]="s.provider" [sub]="s.provider === 'SIMULATED' ? 'Simulated prices' : 'Official BVMT feed'"></tx-metric-card>
+      </ng-container>
+      <ng-template #statusLoading><tx-skeleton [rows]="2" [height]="48"></tx-skeleton></ng-template>
+    </section>
+
+    <!-- Movers (route 7) -->
+    <tx-panel kicker="MOVERS" title="Top movers" class="block">
+      <div actions>
+        <tx-segmented [options]="moverOptions" [value]="moverType" (valueChange)="setMover($event)" label="Mover type"></tx-segmented>
+      </div>
+      <tx-skeleton *ngIf="movers.loading && !movers.data" [rows]="2"></tx-skeleton>
+      <tx-error-state *ngIf="movers.error" [message]="movers.error.message" (retry)="movers.reload()"></tx-error-state>
+      <tx-empty-state *ngIf="!movers.loading && !movers.error && movers.data && !movers.data.length" title="No movers yet" message="Movers appear once prices have changed during a session."></tx-empty-state>
+      <div class="movers" *ngIf="movers.data?.length">
+        <a *ngFor="let q of movers.data" class="mover" [routerLink]="['/markets', q.ticker]">
+          <strong>{{ q.ticker }}</strong><span class="nm">{{ q.name }}</span>
+          <span class="num">{{ q.last | money: false }}</span>
+          <tx-delta [value]="q.changePercent"></tx-delta>
+          <small class="muted">Vol {{ q.volume | qty }}</small>
+        </a>
+      </div>
+    </tx-panel>
+
+    <!-- All instruments (routes 5, 8, 10) -->
+    <tx-panel kicker="ALL INSTRUMENTS" title="Quotes" class="block">
+      <div actions class="tools">
+        <input class="tx-input search" type="search" maxlength="50" placeholder="Search ticker or name" aria-label="Search instruments" [formControl]="search" />
+        <button type="button" class="tx-btn sm" [class.active]="watchOnly" (click)="toggleWatchOnly()" [attr.aria-pressed]="watchOnly">★ Watchlist only</button>
+      </div>
+      <div class="chips" role="group" aria-label="Filter by sector" data-lenis-prevent>
+        <button type="button" class="tx-chip" [class.active]="sector === ''" (click)="setSector('')">All sectors</button>
+        <button *ngFor="let s of sectors" type="button" class="tx-chip" [class.active]="sector === s" (click)="setSector(s)">{{ s }}</button>
+      </div>
+
+      <tx-skeleton *ngIf="instruments.loading && !instruments.data" [rows]="6"></tx-skeleton>
+      <tx-error-state *ngIf="instruments.error" [message]="instruments.error.message" (retry)="instruments.reload()"></tx-error-state>
+      <tx-empty-state *ngIf="instruments.loaded && !instruments.error && !rows.length" title="No instruments match" message="Try another search, sector or turn off the watchlist filter.">
+        <button type="button" class="tx-btn sm" (click)="search.setValue(''); setSector(''); watchOnly && toggleWatchOnly()">Clear filters</button>
+      </tx-empty-state>
+
+      <div class="tx-table-wrap" data-lenis-prevent *ngIf="rows.length">
+        <table class="tx-table">
+          <thead>
+            <tr>
+              <th class="sortable" (click)="sortBy('ticker')" [attr.aria-sort]="ariaSort('ticker')">Ticker</th>
+              <th class="sortable hide-sm" (click)="sortBy('name')" [attr.aria-sort]="ariaSort('name')">Name</th>
+              <th class="sortable hide-sm" (click)="sortBy('sector')" [attr.aria-sort]="ariaSort('sector')">Sector</th>
+              <th class="sortable num" (click)="sortBy('last')" [attr.aria-sort]="ariaSort('last')">Last</th>
+              <th class="sortable num" (click)="sortBy('changePercent')" [attr.aria-sort]="ariaSort('changePercent')">Change</th>
+              <th class="sortable num hide-sm" (click)="sortBy('volume')" [attr.aria-sort]="ariaSort('volume')">Volume</th>
+              <th class="sortable num hide-sm" (click)="sortBy('turnover')" [attr.aria-sort]="ariaSort('turnover')">Turnover</th>
+              <th class="num hide-sm">Bid / Ask</th>
+              <th class="sortable hide-sm" (click)="sortBy('updatedAt')" [attr.aria-sort]="ariaSort('updatedAt')">Time</th>
+              <th class="num">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let r of rows; trackBy: trackTicker" class="clickable" (click)="open(r.inst.ticker)">
+              <td data-label="Ticker" class="ticker-cell"><strong>{{ r.inst.ticker }}</strong><small>{{ r.inst.assetClass }}</small></td>
+              <td data-label="Name" class="hide-sm">{{ r.inst.name }}</td>
+              <td data-label="Sector" class="hide-sm">{{ r.inst.sector || '—' }}</td>
+              <td data-label="Last" class="num" [class.flash-up]="flash.get(r.inst.ticker) === 'up'" [class.flash-down]="flash.get(r.inst.ticker) === 'down'">{{ r.q?.last | money: false }}</td>
+              <td data-label="Change" class="num"><tx-delta [value]="r.q?.changePercent"></tx-delta></td>
+              <td data-label="Volume" class="num hide-sm">{{ r.q?.volume | qty }}</td>
+              <td data-label="Turnover" class="num hide-sm">{{ r.q?.turnover | money: false }}</td>
+              <td data-label="Bid / Ask" class="num hide-sm">{{ r.q?.bid | money: false }} / {{ r.q?.ask | money: false }}</td>
+              <td data-label="Time" class="hide-sm">{{ r.q?.updatedAt | tunisTime: 'time' }}</td>
+              <td data-label="Actions" class="num actions" (click)="$event.stopPropagation()">
+                <button type="button" class="tx-btn sm icon" [attr.aria-label]="(watched.has(r.inst.ticker) ? 'Remove ' : 'Add ') + r.inst.ticker + (watched.has(r.inst.ticker) ? ' from' : ' to') + ' watchlist'"
+                        [attr.aria-pressed]="watched.has(r.inst.ticker)" [disabled]="pending.has(r.inst.ticker)" (click)="toggleWatch(r.inst.ticker)">{{ watched.has(r.inst.ticker) ? '★' : '☆' }}</button>
+                <a class="tx-btn sm icon" [routerLink]="['/chart', r.inst.ticker]" [attr.aria-label]="'Open chart for ' + r.inst.ticker">
+                  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 19V5M4 19H20M8 15L12 10L15 13L20 7"/></svg>
+                </a>
+                <button type="button" class="tx-btn sm" (click)="trade(r.inst.ticker)">Trade</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </tx-panel>
   </div>
 </div>

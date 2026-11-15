@@ -1,7 +1,62 @@
 <div class="tx-page">
-  <div class="tx-container">
-    <tx-module-header kicker="MARKETS / CHARTS" title="Charts"></tx-module-header>
+  <div class="tx-container wide">
+    <tx-module-header [kicker]="'MARKETS / CHARTS / ' + ticker" title="Charts"></tx-module-header>
     <tx-module-tabs [tabs]="tabs"></tx-module-tabs>
-    <tx-empty-state title="Charts" message="This page is built in a later phase."></tx-empty-state>
+
+    <!-- Toolbar -->
+    <div class="toolbar">
+      <div class="tb">
+        <ng-container *ngFor="let t of [ticker]">
+          <tx-ticker-search class="ts" [navigate]="false" [initial]="t" placeholder="Ticker" (picked)="pick($event)"></tx-ticker-search>
+        </ng-container>
+        <div class="px" *ngIf="quote">
+          <strong class="num">{{ quote.last | money: false }}</strong>
+          <tx-delta [value]="quote.changePercent"></tx-delta>
+        </div>
+        <span class="tx-spacer"></span>
+        <tx-segmented [options]="tfOptions" [value]="interval" (valueChange)="setTimeframe($event)" label="Timeframe (candle size)"></tx-segmented>
+        <tx-segmented [options]="rangeOptions" [value]="range" (valueChange)="setRange($event)" label="Visible range"></tx-segmented>
+      </div>
+      <div class="tb">
+        <button type="button" class="tx-btn sm" [class.active]="showVolume" [attr.aria-pressed]="showVolume" (click)="toggleVolume()">Volume</button>
+        <button type="button" class="tx-btn sm" [class.active]="live" [attr.aria-pressed]="live" [disabled]="!marketLive" [attr.title]="liveReason || 'Reload candles when a live price arrives'" (click)="toggleLive()">Live</button>
+        <button type="button" class="tx-btn sm" [class.active]="showLegend" [attr.aria-pressed]="showLegend" (click)="toggleLegend()">Crosshair legend</button>
+        <button type="button" class="tx-btn sm" [class.active]="showTrades" [attr.aria-pressed]="showTrades" (click)="toggleTrades()">My trades</button>
+        <span class="tx-spacer"></span>
+        <button type="button" class="tx-btn sm" (click)="resetView()">Reset view</button>
+        <button type="button" class="tx-btn sm" (click)="fullscreen()">Fullscreen</button>
+        <button type="button" class="tx-btn sm" (click)="screenshot()">Screenshot</button>
+        <button type="button" class="tx-btn sm panel-toggle" (click)="panelOpen = !panelOpen" [attr.aria-expanded]="panelOpen" aria-controls="indicator-side">Indicators ({{ instances.length }})</button>
+      </div>
+    </div>
+
+    <!-- Banners -->
+    <div class="banners">
+      <span class="tx-pill silver" *ngIf="series.data?.live">LIVE CANDLE</span>
+      <div class="tx-alert warn" *ngIf="series.data?.truncated">Showing the latest 5 000 candles. Choose a shorter range or a longer timeframe to see the rest.</div>
+      <tx-error-state *ngIf="series.error" [message]="series.error.message" (retry)="reload()"></tx-error-state>
+      <tx-empty-state *ngIf="series.data && !series.data.candles.length && !series.error" title="No candles for this period"
+        [message]="isIntraday ? 'No intraday data for this period yet. Intraday candles only exist for times when the server was collecting prices during market hours.' : 'No daily bars for this period yet.'">
+        <button *ngIf="isIntraday" type="button" class="tx-btn sm" (click)="switchToDaily()">Switch to 1D</button>
+      </tx-empty-state>
+    </div>
+
+    <div class="layout" [class.with-panel]="panelOpen">
+      <section class="chartwrap tx-panel" aria-label="Price chart">
+        <div class="loading" *ngIf="series.loading && !candles.length"><tx-skeleton [rows]="6" [height]="22"></tx-skeleton></div>
+        <app-candle-chart [mode]="'candles'" [candles]="candles" [interval]="chartInterval" [indicators]="chartIndicators"
+                          [showVolume]="showVolume" [showLegend]="showLegend" [showTrades]="showTrades" [trades]="trades"
+                          [title]="ticker + ' · ' + (chartInterval === 'D1' ? '1D' : chartInterval === 'W1' ? '1W' : chartInterval)"
+                          [fitToken]="fitToken" [height]="600"></app-candle-chart>
+      </section>
+
+      <aside id="indicator-side" class="side" [class.open]="panelOpen" data-lenis-prevent>
+        <app-indicator-panel [catalog]="catalog.data" [catalogLoading]="catalog.loading" [catalogError]="catalog.error?.message ?? ''"
+          [instances]="instances"
+          (add)="addIndicator($event)" (update)="updateIndicator($event)" (remove)="removeIndicator($event)" (toggle)="toggleIndicator($event)"
+          (recolor)="recolor($event)" (hideAll)="setAllVisible(false)" (showAll)="setAllVisible(true)" (clear)="clearIndicators()"
+          (preset)="applyPreset($event)" (retryCatalog)="retryCatalog()"></app-indicator-panel>
+      </aside>
+    </div>
   </div>
 </div>

@@ -1,1 +1,23 @@
-<span hidden></span>
+<div #box class="box" [style.height.px]="height">
+  <div #surface class="surface" data-lenis-prevent role="img" [attr.aria-label]="'Chart ' + title"></div>
+
+  <div class="legend" *ngIf="showLegend && ready">
+    <div class="line1">
+      <strong class="t">{{ legend.title }}</strong>
+      <ng-container *ngIf="legend.ohlc as o">
+        <span>O <b class="num">{{ o.o }}</b></span><span>H <b class="num">{{ o.h }}</b></span>
+        <span>L <b class="num">{{ o.l }}</b></span><span>C <b class="num">{{ o.c }}</b></span>
+        <span *ngIf="o.chg" [class]="o.chgClass"><b class="num">{{ o.chg }}</b></span>
+        <span>Vol <b class="num">{{ o.vol }}</b></span>
+      </ng-container>
+      <span *ngIf="legend.value !== null">Value <b class="num">{{ legend.value }}</b></span>
+    </div>
+    <div class="inds" *ngIf="legend.inds.length">
+      <span *ngFor="let i of legend.inds"><i [style.background]="i.color"></i>{{ i.label }} <b class="num">{{ i.value }}</b></span>
+    </div>
+    <div class="trades" *ngIf="legend.trades.length"><span *ngFor="let t of legend.trades">{{ t }}</span></div>
+  </div>
+
+  <div class="state" *ngIf="!ready && !failed" role="status">Loading chart…</div>
+  <div class="state err" *ngIf="failed" role="alert">The chart library could not be loaded.</div>
+</div>
