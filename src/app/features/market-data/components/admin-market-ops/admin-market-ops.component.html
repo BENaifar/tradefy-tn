@@ -1,1 +1,120 @@
-<span hidden></span>
+<div class="ops">
+  <div class="intro">
+    <span class="tx-eyebrow">MARKET OPERATIONS</span>
+    <h2>Market data</h2>
+    <p>Check the feed, run syncs, import history and curate instruments.</p>
+  </div>
+
+  <!-- Status -->
+  <div class="tx-grid-4 strip">
+    <ng-container *ngIf="status.data as s; else statusState">
+      <tx-metric-card kicker="SESSION" [value]="s.open ? 'Open' : 'Closed'" [sub]="s.sessionOpen.slice(0, 5) + ' – ' + s.sessionClose.slice(0, 5) + ' ' + s.zone"></tx-metric-card>
+      <tx-metric-card kicker="PROVIDER" [value]="s.provider" [sub]="s.provider === 'SIMULATED' ? 'Simulated prices' : 'Live BVMT feed'"></tx-metric-card>
+      <tx-metric-card kicker="INSTRUMENTS" [value]="s.instrumentsCount + ''"></tx-metric-card>
+      <tx-metric-card kicker="LAST SYNC" [value]="s.lastSyncAt | tunisTime: 'time'" [sub]="(s.lastSyncAt | tunisTime: 'date') + ' Tunis time'"></tx-metric-card>
+    </ng-container>
+    <ng-template #statusState>
+      <tx-skeleton *ngIf="status.loading" [rows]="2" [height]="44"></tx-skeleton>
+      <tx-error-state *ngIf="status.error" [message]="status.error.message" (retry)="status.reload()"></tx-error-state>
+    </ng-template>
+  </div>
+
+  <!-- Actions -->
+  <tx-panel kicker="ACTIONS" title="Sync, close session, snapshots" class="block">
+    <div class="tx-alert err" *ngIf="actionError" role="alert">{{ actionError }}</div>
+    <div class="actions">
+      <div class="act">
+        <strong>Sync now</strong><small>Fetch the latest quotes immediately.</small>
+        <button type="button" class="tx-btn" (click)="syncNow()" [disabled]="busy.sync"><span *ngIf="busy.sync" class="tx-spinner"></span> Sync now</button>
+        <p class="res" *ngIf="syncResult">{{ syncResult }}</p>
+      </div>
+      <div class="act">
+        <strong>Close session</strong><small>Writes today's daily bars.</small>
+        <button type="button" class="tx-btn" (click)="closeSession()" [disabled]="busy.close"><span *ngIf="busy.close" class="tx-spinner"></span> Close session</button>
+        <p class="res" *ngIf="closeResult">{{ closeResult }}</p>
+      </div>
+      <div class="act">
+        <strong>Take snapshots</strong><small>Record every portfolio's value for a day.</small>
+        <div class="tx-field"><label for="snap-date">Date (optional)</label><input id="snap-date" class="tx-input" type="date" [max]="today" [formControl]="snapDate" /></div>
+        <button type="button" class="tx-btn" (click)="takeSnapshots()" [disabled]="busy.snap"><span *ngIf="busy.snap" class="tx-spinner"></span> Take snapshots</button>
+        <p class="res" *ngIf="snapResult">{{ snapResult }}</p>
+      </div>
+    </div>
+  </tx-panel>
+
+  <!-- CSV import -->
+  <tx-panel kicker="HISTORY" title="Import daily bars (CSV)" class="block">
+    <div class="drop" [class.drag]="dragging" (dragover)="onDrag($event, true)" (dragleave)="onDrag($event, false)" (drop)="onDrop($event)">
+      <p>Drag a <code>.csv</code> file here, or</p>
+      <label class="tx-btn sm"><input type="file" accept=".csv,text/csv" hidden (change)="onFile($event)" />Choose a file</label>
+      <small class="muted">Header: <code>date,ticker,open,high,low,close,volume</code> · max 5 MB</small>
+    </div>
+    <div class="tx-alert err" *ngIf="check && !check.ok" role="alert">{{ check.message }}</div>
+    <ng-container *ngIf="file && check?.ok">
+      <p class="fileinfo"><strong>{{ file.name }}</strong> · {{ (file.size / 1024).toFixed(1) }} KB · {{ check?.message }}</p>
+      <div class="tx-table-wrap prev" data-lenis-prevent>
+        <table class="tx-table">
+          <tbody><tr *ngFor="let r of check?.preview; let i = index" [class.head]="i === 0"><td *ngFor="let c of r">{{ c }}</td></tr></tbody>
+        </table>
+      </div>
+      <div class="tx-row">
+        <button type="button" class="tx-btn primary" (click)="upload()" [disabled]="busy.csv"><span *ngIf="busy.csv" class="tx-spinner"></span> Upload</button>
+        <button type="button" class="tx-btn" (click)="clearFile()" [disabled]="busy.csv">Cancel</button>
+      </div>
+    </ng-container>
+    <div class="tx-alert err" *ngIf="csvError" role="alert">{{ csvError }}</div>
+    <div class="result" *ngIf="csvResult as r">
+      <div class="tx-grid-4">
+        <tx-metric-card kicker="INSERTED" [value]="r.inserted + ''"></tx-metric-card>
+        <tx-metric-card kicker="UPDATED" [value]="r.updated + ''"></tx-metric-card>
+        <tx-metric-card kicker="TOTAL ROWS" [value]="r.totalRows + ''"></tx-metric-card>
+        <tx-metric-card kicker="ERRORS" [value]="r.errors.length + ''"></tx-metric-card>
+      </div>
+      <div *ngIf="r.errors.length" class="errs">
+        <div class="tx-row"><strong>Rows that were not imported</strong><span class="tx-spacer"></span><button type="button" class="tx-btn sm" (click)="copyErrors()">Copy errors</button></div>
+        <ul data-lenis-prevent><li *ngFor="let e of r.errors">{{ e }}</li></ul>
+      </div>
+    </div>
+  </tx-panel>
+
+  <!-- Edit instrument -->
+  <tx-panel kicker="INSTRUMENT" title="Edit an instrument" class="block">
+    <div class="edit">
+      <div class="tx-field"><label>Find an instrument</label><tx-ticker-search [navigate]="false" placeholder="Search ticker or name" (picked)="pickInstrument($event)"></tx-ticker-search></div>
+      <div class="tx-alert err" *ngIf="editError" role="alert">{{ editError }}</div>
+      <form *ngIf="editing" [formGroup]="editForm" (ngSubmit)="saveInstrument()" class="eform">
+        <p><strong>{{ editing.ticker }}</strong> <span class="muted">{{ editing.name }}</span></p>
+        <div class="tx-field"><label for="ed-sector">Sector</label>
+          <input id="ed-sector" class="tx-input" list="ed-sectors" maxlength="60" formControlName="sector" />
+          <datalist id="ed-sectors"><option *ngFor="let s of sectors" [value]="s"></option></datalist>
+        </div>
+        <label class="check"><input type="checkbox" formControlName="active" /> Active (shown to users)</label>
+        <button type="submit" class="tx-btn primary" [disabled]="busy.save"><span *ngIf="busy.save" class="tx-spinner"></span> Save</button>
+      </form>
+    </div>
+  </tx-panel>
+
+  <!-- Instruments table (route 5) -->
+  <tx-panel kicker="INSTRUMENTS" title="Latest quotes" class="block">
+    <div actions><input class="tx-input flt" type="search" maxlength="50" placeholder="Filter" aria-label="Filter instruments" [formControl]="filter" /></div>
+    <tx-skeleton *ngIf="quotes.loading && !quotes.data" [rows]="5"></tx-skeleton>
+    <tx-error-state *ngIf="quotes.error" [message]="quotes.error.message" (retry)="quotes.reload()"></tx-error-state>
+    <div class="tx-table-wrap list" data-lenis-prevent *ngIf="quotes.data?.length">
+      <table class="tx-table">
+        <thead><tr><th>Ticker</th><th class="hide-sm">Name</th><th class="num">Last</th><th class="num">Change</th><th class="num hide-sm">Volume</th><th class="hide-sm">Updated</th></tr></thead>
+        <tbody>
+          <tr *ngFor="let q of rows; trackBy: trackTicker" class="clickable" (click)="pickInstrument(q.ticker)">
+            <td data-label="Ticker"><strong>{{ q.ticker }}</strong></td>
+            <td data-label="Name" class="hide-sm">{{ q.name }}</td>
+            <td data-label="Last" class="num">{{ q.last | money: false }}</td>
+            <td data-label="Change" class="num"><tx-delta [value]="q.changePercent"></tx-delta></td>
+            <td data-label="Volume" class="num hide-sm">{{ q.volume | qty }}</td>
+            <td data-label="Updated" class="hide-sm">{{ q.updatedAt | tunisTime }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </tx-panel>
+</div>
+<tx-toast></tx-toast>
+<tx-confirm-dialog></tx-confirm-dialog>

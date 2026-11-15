@@ -119,21 +119,14 @@
           </article>
         </div>
 
+        <!-- MARKET-PORTFOLIO: start -->
+        <app-dashboard-portfolio-strip></app-dashboard-portfolio-strip>
+        <!-- MARKET-PORTFOLIO: end -->
+
         <div class="dashboard-grid">
-          <article class="dashboard-panel market-panel">
-            <div class="panel-heading">
-              <div><span class="panel-kicker">MARKET PULSE</span><h3>Watchlist snapshot</h3></div>
-              <span class="demo-label">ILLUSTRATIVE DATA</span>
-            </div>
-            <div class="watchlist">
-              <div *ngFor="let market of marketSnapshot" class="watch-row">
-                <div><strong>{{ market.symbol }}</strong><span>SPOT</span></div>
-                <span class="watch-price">{{ market.price }}</span>
-                <span [class.positive]="market.positive" [class.negative]="!market.positive">{{ market.change }}</span>
-                <svg viewBox="0 0 100 30" aria-hidden="true"><polyline [attr.points]="market.positive ? '0,25 14,20 27,23 40,13 52,17 66,8 79,12 100,3' : '0,5 14,9 27,7 40,16 52,12 66,21 79,18 100,27'"/></svg>
-              </div>
-            </div>
-          </article>
+          <!-- MARKET-PORTFOLIO: start -->
+          <app-dashboard-watchlist-panel class="dashboard-panel market-panel"></app-dashboard-watchlist-panel>
+          <!-- MARKET-PORTFOLIO: end -->
 
           <article class="dashboard-panel insight-panel">
             <div class="panel-heading"><div><span class="panel-kicker">AI PERSPECTIVE</span><h3>Context before action</h3></div><span class="insight-orbit" aria-hidden="true"></span></div>
@@ -150,6 +143,11 @@
               <button type="button" (click)="setActiveTab('profile')"><span class="quick-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M5 21C6 17 8 15 12 15C16 15 18 17 19 21"/></svg></span><span><strong>Review profile</strong><small>Identity and contact details</small></span><i>↗</i></button>
               <button type="button" (click)="setActiveTab('security')"><span class="quick-icon"><svg viewBox="0 0 24 24"><path d="M5 11V8A7 7 0 0 1 19 8V11M4 11H20V21H4Z"/></svg></span><span><strong>Security settings</strong><small>Update access credentials</small></span><i>↗</i></button>
               <button *ngIf="isAdmin" type="button" (click)="setActiveTab('admin')"><span class="quick-icon"><svg viewBox="0 0 24 24"><path d="M4 5H20V19H4ZM4 10H20"/></svg></span><span><strong>Manage users</strong><small>Directory and permissions</small></span><i>↗</i></button>
+              <!-- MARKET-PORTFOLIO: start -->
+              <button type="button" routerLink="/markets"><span class="quick-icon"><svg viewBox="0 0 24 24"><path d="M4 19V5M4 19H20M8 15L12 10L15 13L20 7"/></svg></span><span><strong>Open markets</strong><small>Live quotes and movers</small></span><i>↗</i></button>
+              <button type="button" routerLink="/chart"><span class="quick-icon"><svg viewBox="0 0 24 24"><path d="M7 4V20M7 8H5V16H9V8ZM17 4V20M17 6H15V13H19V6Z"/></svg></span><span><strong>Open a chart</strong><small>Candles and indicators</small></span><i>↗</i></button>
+              <button type="button" routerLink="/portfolio" [queryParams]="{ trade: 'open' }"><span class="quick-icon"><svg viewBox="0 0 24 24"><path d="M4 8H20V20H4ZM9 8V5H15V8"/></svg></span><span><strong>Place a trade</strong><small>Practise with virtual cash</small></span><i>↗</i></button>
+              <!-- MARKET-PORTFOLIO: end -->
             </div>
           </article>
 
@@ -162,6 +160,10 @@
             </ol>
           </article>
         </div>
+
+        <!-- MARKET-PORTFOLIO: start -->
+        <app-dashboard-modules-row></app-dashboard-modules-row>
+        <!-- MARKET-PORTFOLIO: end -->
       </section>
 
       <section *ngIf="activeTab === 'profile'" class="settings-view" aria-labelledby="profile-title">

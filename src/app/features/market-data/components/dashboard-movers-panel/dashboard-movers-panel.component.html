@@ -1,1 +1,19 @@
-<span hidden></span>
+<section class="tx-panel">
+  <div class="tx-panel-heading">
+    <div><span class="tx-kicker">MARKET MOVERS</span><h3>Top movers</h3></div>
+    <a class="link" routerLink="/markets">Markets <span aria-hidden="true">↗</span></a>
+  </div>
+  <tx-skeleton *ngIf="(gainers.loading || losers.loading) && !gainers.data" [rows]="4" [height]="24"></tx-skeleton>
+  <tx-error-state *ngIf="failed" message="Couldn't load movers." (retry)="load()"></tx-error-state>
+  <div class="cols" *ngIf="gainers.data || losers.data">
+    <div>
+      <span class="tx-kicker">GAINERS</span>
+      <a *ngFor="let q of gainers.data" class="r" [routerLink]="['/markets', q.ticker]"><strong>{{ q.ticker }}</strong><span class="num">{{ q.last | money: false }}</span><tx-delta [value]="q.changePercent"></tx-delta></a>
+    </div>
+    <div>
+      <span class="tx-kicker">LOSERS</span>
+      <a *ngFor="let q of losers.data" class="r" [routerLink]="['/markets', q.ticker]"><strong>{{ q.ticker }}</strong><span class="num">{{ q.last | money: false }}</span><tx-delta [value]="q.changePercent"></tx-delta></a>
+    </div>
+  </div>
+  <tx-empty-state *ngIf="gainers.data && !gainers.data.length && losers.data && !losers.data.length" title="No movers yet"></tx-empty-state>
+</section>

@@ -1,1 +1,9 @@
-:host { display: block; }
+@use '../../../../shared/ui/styles/index' as *;
+
+:host { display: block; margin-top: 18px; @include tx-tokens; }
+.row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
+.tx-panel { height: 100%; }
+.link { color: var(--silver); font-size: 0.64rem; }
+.txs { margin: 0; padding: 0; list-style: none; li { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 9px 0; border-bottom: 1px solid var(--tx-border-soft); font-size: 0.68rem;
+  small { display: block; margin-top: 3px; font-size: 0.58rem; } strong { margin-left: 6px; } } }
+@media (max-width: 1100px) { .row { grid-template-columns: 1fr; } }

@@ -1,1 +1,29 @@
-<span hidden></span>
+<ng-container *ngIf="store.vm$ | async as vm">
+  <tx-skeleton *ngIf="vm.loading && !vm.summary" [rows]="2" [height]="64"></tx-skeleton>
+  <tx-error-state *ngIf="vm.error && !vm.summary" [message]="vm.error.message" (retry)="store.refresh()"></tx-error-state>
+
+  <ng-container *ngIf="vm.summary as s">
+    <!-- First-time user: nothing traded yet -->
+    <section class="first" *ngIf="s.openPositionsCount === 0 && s.totalFees === 0; else cards" aria-label="Get started">
+      <div>
+        <span class="kicker">YOUR VIRTUAL PORTFOLIO</span>
+        <h3>You have {{ s.availableCash | money }} of virtual cash.</h3>
+        <p>Practise on real BVMT prices without risking a dinar.</p>
+      </div>
+      <ol>
+        <li><button type="button" (click)="go('/markets')"><b>1</b> Find a stock <span aria-hidden="true">→</span></button></li>
+        <li><button type="button" (click)="go('/chart')"><b>2</b> Open its chart <span aria-hidden="true">→</span></button></li>
+        <li><button type="button" (click)="trade()"><b>3</b> Place your first trade <span aria-hidden="true">→</span></button></li>
+      </ol>
+    </section>
+
+    <ng-template #cards>
+      <div class="grid" aria-label="Portfolio overview">
+        <a routerLink="/portfolio" class="card"><tx-metric-card kicker="TOTAL VALUE" [value]="s.totalValue | money" [sparkline]="spark" [delta]="s.totalReturnPct"></tx-metric-card></a>
+        <a routerLink="/portfolio" class="card"><tx-metric-card kicker="TODAY'S P&L" [value]="s.dayPnl | money: true: true" [valueClass]="s.dayPnl > 0 ? 'pos' : s.dayPnl < 0 ? 'neg' : ''" [delta]="s.dayPnlPct"></tx-metric-card></a>
+        <a routerLink="/portfolio" class="card"><tx-metric-card kicker="TOTAL RETURN" [value]="s.totalReturnPct | pct" [valueClass]="s.totalReturnPct > 0 ? 'pos' : s.totalReturnPct < 0 ? 'neg' : ''" [sub]="s.totalPnl | money: true: true"></tx-metric-card></a>
+        <a routerLink="/portfolio" class="card"><tx-metric-card kicker="AVAILABLE CASH" [value]="s.availableCash | money" [sub]="s.openPositionsCount + ' open position' + (s.openPositionsCount === 1 ? '' : 's')"></tx-metric-card></a>
+      </div>
+    </ng-template>
+  </ng-container>
+</ng-container>

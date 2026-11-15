@@ -1,1 +1,54 @@
-<span hidden></span>
+<div class="ops">
+  <div class="intro">
+    <span class="tx-eyebrow">PORTFOLIO OPERATIONS</span>
+    <h2>Portfolios</h2>
+    <p>Every user's virtual portfolio at a glance. Select a row to see that portfolio's summary.</p>
+  </div>
+
+  <tx-panel kicker="ALL PORTFOLIOS" [title]="(list.data?.length ?? 0) + ' portfolios'">
+    <div actions><input class="tx-input flt" type="search" maxlength="50" placeholder="Search name or email" aria-label="Search portfolios" [formControl]="search" /></div>
+    <tx-skeleton *ngIf="list.loading && !list.data" [rows]="5" [height]="26"></tx-skeleton>
+    <tx-error-state *ngIf="list.error" [message]="list.error.message" (retry)="list.reload()"></tx-error-state>
+    <tx-empty-state *ngIf="list.data && !rows.length" title="No portfolios found" [message]="search.value ? 'Try another search.' : 'Portfolios are created when users first open theirs.'"></tx-empty-state>
+    <div class="tx-table-wrap" data-lenis-prevent *ngIf="rows.length">
+      <table class="tx-table">
+        <thead>
+          <tr>
+            <th class="sortable" (click)="sortBy('fullName')" [attr.aria-sort]="ariaSort('fullName')">User</th>
+            <th class="sortable hide-sm" (click)="sortBy('email')" [attr.aria-sort]="ariaSort('email')">Email</th>
+            <th class="sortable num" (click)="sortBy('totalValue')" [attr.aria-sort]="ariaSort('totalValue')">Total value</th>
+            <th class="sortable num" (click)="sortBy('totalReturnPct')" [attr.aria-sort]="ariaSort('totalReturnPct')">Return</th>
+            <th class="sortable num hide-sm" (click)="sortBy('openPositions')" [attr.aria-sort]="ariaSort('openPositions')">Positions</th>
+            <th class="sortable hide-sm" (click)="sortBy('lastActivity')" [attr.aria-sort]="ariaSort('lastActivity')">Last activity</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let r of rows; trackBy: trackUser" class="clickable" tabindex="0" (click)="select(r)" (keydown.enter)="select(r)">
+            <td data-label="User"><strong>{{ r.fullName }}</strong></td>
+            <td data-label="Email" class="hide-sm">{{ r.email }}</td>
+            <td data-label="Total value" class="num">{{ r.totalValue | money }}</td>
+            <td data-label="Return" class="num"><tx-delta [value]="r.totalReturnPct"></tx-delta></td>
+            <td data-label="Positions" class="num hide-sm">{{ r.openPositions }}</td>
+            <td data-label="Last activity" class="hide-sm">{{ r.lastActivity | tunisTime }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </tx-panel>
+</div>
+
+<tx-drawer [open]="!!open" kicker="PORTFOLIO (READ-ONLY)" [title]="open?.fullName ?? ''" (closed)="open = null">
+  <p class="muted em">{{ open?.email }}</p>
+  <tx-skeleton *ngIf="detail.loading && !detail.data" [rows]="5" [height]="40"></tx-skeleton>
+  <tx-error-state *ngIf="detail.error" [message]="detail.error.message" (retry)="detail.reload()"></tx-error-state>
+  <div class="cards" *ngIf="detail.data as s">
+    <tx-metric-card kicker="TOTAL VALUE" [value]="s.totalValue | money" [delta]="s.totalReturnPct"></tx-metric-card>
+    <tx-metric-card kicker="AVAILABLE CASH" [value]="s.availableCash | money" [sub]="s.reservedCash ? (s.reservedCash | money) + ' reserved' : ''"></tx-metric-card>
+    <tx-metric-card kicker="MARKET VALUE" [value]="s.marketValue | money" [sub]="s.openPositionsCount + ' open positions'"></tx-metric-card>
+    <tx-metric-card kicker="TODAY'S P&L" [value]="s.dayPnl | money: true: true" [delta]="s.dayPnlPct"></tx-metric-card>
+    <tx-metric-card kicker="REALIZED P&L" [value]="s.realizedPnl | money: true: true"></tx-metric-card>
+    <tx-metric-card kicker="UNREALIZED P&L" [value]="s.unrealizedPnl | money: true: true"></tx-metric-card>
+    <tx-metric-card kicker="FEES PAID" [value]="s.totalFees | money"></tx-metric-card>
+    <tx-metric-card kicker="NET CONTRIBUTIONS" [value]="s.netContributions | money"></tx-metric-card>
+  </div>
+</tx-drawer>

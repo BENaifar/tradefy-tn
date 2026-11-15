@@ -1,1 +1,30 @@
-<span hidden></span>
+<div class="row">
+  <section class="tx-panel">
+    <div class="tx-panel-heading">
+      <div><span class="tx-kicker">ALLOCATION</span><h3>By sector</h3></div>
+      <a class="link" routerLink="/portfolio/allocation">Open <span aria-hidden="true">↗</span></a>
+    </div>
+    <tx-skeleton *ngIf="alloc.loading && !alloc.data" [rows]="3" [height]="24"></tx-skeleton>
+    <tx-error-state *ngIf="alloc.error" message="Couldn't load your allocation." (retry)="load()"></tx-error-state>
+    <tx-donut *ngIf="slices.length" [slices]="slices" centerLabel="Total" [centerValue]="(alloc.data?.totalValue | money: false) ?? ''"></tx-donut>
+    <tx-empty-state *ngIf="alloc.data && !slices.length" title="Nothing allocated yet"></tx-empty-state>
+  </section>
+
+  <app-dashboard-movers-panel></app-dashboard-movers-panel>
+
+  <section class="tx-panel">
+    <div class="tx-panel-heading">
+      <div><span class="tx-kicker">ACTIVITY</span><h3>Last transactions</h3></div>
+      <a class="link" routerLink="/portfolio/activity">Open <span aria-hidden="true">↗</span></a>
+    </div>
+    <tx-skeleton *ngIf="txs.loading && !txs.data" [rows]="4" [height]="24"></tx-skeleton>
+    <tx-error-state *ngIf="txs.error" message="Couldn't load your transactions." (retry)="load()"></tx-error-state>
+    <ul class="txs" *ngIf="txs.data?.content?.length">
+      <li *ngFor="let t of txs.data?.content">
+        <div><span class="tx-pill" [class.pos]="t.type === 'BUY' || t.type === 'DEPOSIT'" [class.neg]="t.type === 'SELL' || t.type === 'WITHDRAWAL'">{{ badge(t.type) }}</span> <strong>{{ t.ticker }}</strong><small class="muted">{{ t.executedAt | tunisTime }}</small></div>
+        <tx-delta [value]="t.netAmount" kind="money"></tx-delta>
+      </li>
+    </ul>
+    <tx-empty-state *ngIf="txs.data && !txs.data.content.length" title="No transactions yet"></tx-empty-state>
+  </section>
+</div>

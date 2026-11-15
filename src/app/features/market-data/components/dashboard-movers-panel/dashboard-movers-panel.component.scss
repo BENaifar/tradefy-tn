@@ -1,1 +1,9 @@
-:host { display: block; }
+@use '../../../../shared/ui/styles/index' as *;
+
+:host { display: block; height: 100%; @include tx-tokens; }
+.tx-panel { height: 100%; }
+.link { color: var(--silver); font-size: 0.64rem; }
+.cols { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.r { display: grid; grid-template-columns: 1fr auto; gap: 2px 8px; padding: 8px 0; border-bottom: 1px solid var(--tx-border-soft); font-size: 0.7rem; color: inherit;
+  strong { grid-column: 1; } .num { grid-column: 2; } tx-delta { grid-column: 1 / -1; font-size: 0.62rem; } &:hover strong { text-decoration: underline; } }
+@media (max-width: 560px) { .cols { grid-template-columns: 1fr; } }

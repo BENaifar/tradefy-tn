@@ -1,1 +1,29 @@
-<span hidden></span>
+<div class="panel-heading">
+  <div><span class="panel-kicker">MARKET PULSE</span><h3>{{ list.data && !list.data.length ? 'Top gainers today' : 'Your watchlist' }}</h3></div>
+  <a class="panel-link" routerLink="/watchlist">Open watchlist <span aria-hidden="true">↗</span></a>
+</div>
+
+<tx-skeleton *ngIf="list.loading && !list.data" [rows]="4" [height]="30"></tx-skeleton>
+<tx-error-state *ngIf="list.error" [message]="list.error.message" (retry)="list.reload()"></tx-error-state>
+
+<div class="watchlist" *ngIf="list.data?.length">
+  <a *ngFor="let r of rows; trackBy: trackTicker" class="watch-row" [routerLink]="['/markets', r.ticker]">
+    <div><strong>{{ r.ticker }}</strong><span>{{ r.name }}</span></div>
+    <span class="watch-price">{{ r.q?.last | money: false }}</span>
+    <tx-delta [value]="r.q?.changePercent"></tx-delta>
+    <tx-range-bar [min]="r.q?.low" [max]="r.q?.high" [value]="r.q?.last"></tx-range-bar>
+  </a>
+</div>
+
+<ng-container *ngIf="list.data && !list.data.length">
+  <tx-skeleton *ngIf="gainers.loading && !gainers.data" [rows]="3" [height]="30"></tx-skeleton>
+  <div class="watchlist" *ngIf="gainers.data?.length">
+    <a *ngFor="let r of gainerRows; trackBy: trackTicker" class="watch-row" [routerLink]="['/markets', r.ticker]">
+      <div><strong>{{ r.ticker }}</strong><span>{{ r.name }}</span></div>
+      <span class="watch-price">{{ r.q?.last | money: false }}</span>
+      <tx-delta [value]="r.q?.changePercent"></tx-delta>
+      <tx-range-bar [min]="r.q?.low" [max]="r.q?.high" [value]="r.q?.last"></tx-range-bar>
+    </a>
+  </div>
+  <p class="hint">Star stocks to build your watchlist. <a routerLink="/markets">Browse markets</a></p>
+</ng-container>

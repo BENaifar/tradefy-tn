@@ -1,1 +1,16 @@
-:host { display: block; }
+@use '../../../../shared/ui/styles/index' as *;
+
+:host { display: block; margin-bottom: 18px; @include tx-tokens; }
+.grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+.card { display: block; color: inherit; transition: transform 160ms ease; &:hover { transform: translateY(-2px); } }
+.first { display: flex; align-items: center; justify-content: space-between; gap: 28px; flex-wrap: wrap; padding: 22px; border: 1px solid var(--silver-line); border-radius: 11px;
+  background: linear-gradient(105deg, rgba(244, 246, 248, 0.07), rgba(154, 160, 168, 0.02));
+  .kicker { font: 0.56rem $mono; letter-spacing: 0.1em; color: var(--silver-muted); }
+  h3 { margin-top: 8px; font-size: 1.15rem; font-weight: 600; letter-spacing: -0.03em; }
+  p { margin-top: 6px; color: var(--tx-muted); font-size: 0.72rem; }
+  ol { display: flex; gap: 10px; flex-wrap: wrap; margin: 0; padding: 0; list-style: none; }
+  button { display: inline-flex; align-items: center; gap: 10px; min-height: 42px; padding: 8px 14px; border: 1px solid var(--tx-border); border-radius: 8px; background: rgba(255, 255, 255, 0.04); color: #fff; font-size: 0.72rem; cursor: pointer; transition: 160ms ease;
+    &:hover { border-color: var(--silver-line); background: rgba(255, 255, 255, 0.08); }
+    b { display: inline-grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; background: var(--silver-bright); color: #000; font-size: 0.62rem; } } }
+@media (max-width: 1050px) { .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 560px) { .grid { grid-template-columns: 1fr; } }
