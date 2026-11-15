@@ -2,6 +2,124 @@
   <div class="tx-container">
     <tx-module-header kicker="PORTFOLIO / ALLOCATION" title="Allocation"></tx-module-header>
     <tx-module-tabs [tabs]="tabs"></tx-module-tabs>
-    <tx-empty-state title="Allocation" message="This page is built in a later phase."></tx-empty-state>
+
+    <!-- 1. See: current allocation -->
+    <tx-panel kicker="1 · SEE" title="Current allocation" class="block">
+      <div actions><tx-segmented [options]="groupOptions" [value]="groupBy" (valueChange)="setGroup($event)" label="Group allocation by"></tx-segmented></div>
+      <tx-skeleton *ngIf="alloc.loading && !alloc.data" [rows]="5" [height]="24"></tx-skeleton>
+      <tx-error-state *ngIf="alloc.error" [message]="alloc.error.message" (retry)="alloc.reload()"></tx-error-state>
+      <div class="see" *ngIf="alloc.data as a">
+        <tx-donut [slices]="slices" centerLabel="Total" [centerValue]="a.totalValue | money: false"></tx-donut>
+        <div class="tx-table-wrap" data-lenis-prevent>
+          <table class="tx-table">
+            <thead><tr><th>{{ groupBy === 'INSTRUMENT' ? 'Stock' : groupBy === 'SECTOR' ? 'Sector' : 'Class' }}</th><th class="num">Value</th><th class="num">Weight</th><th class="num">Target</th><th class="num">Drift</th><th class="hide-sm bulletcol">Target vs actual</th></tr></thead>
+            <tbody>
+              <tr *ngFor="let s of a.slices; trackBy: trSlice" [class.cash]="isCash(s)">
+                <td data-label="Name"><strong>{{ s.label || s.key }}</strong><small *ngIf="isCash(s)" class="muted"> · cash</small></td>
+                <td data-label="Value" class="num">{{ s.value | money: false }}</td>
+                <td data-label="Weight" class="num">{{ s.weightPct | pct: false }}</td>
+                <td data-label="Target" class="num">{{ hasTarget(s) ? (s.targetPct | pct: false) : '—' }}</td>
+                <td data-label="Drift" class="num"><tx-delta *ngIf="hasTarget(s)" [value]="s.driftPct"></tx-delta><span *ngIf="!hasTarget(s)">—</span></td>
+                <td data-label="Target vs actual" class="hide-sm bulletcol">
+                  <div class="bullet" [class.hatched]="isCash(s)" role="img" [attr.aria-label]="'Actual ' + (s.weightPct | pct: false) + (hasTarget(s) ? ', target ' + (s.targetPct | pct: false) : '')">
+                    <span class="fill" [style.width.%]="s.weightPct"></span>
+                    <i *ngIf="hasTarget(s)" class="tick" [style.left.%]="s.targetPct"></i>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </tx-panel>
+
+    <!-- 2. Set targets -->
+    <tx-panel kicker="2 · SET TARGETS" title="Target allocation" class="block">
+      <tx-skeleton *ngIf="targets.loading && !targets.data" [rows]="3"></tx-skeleton>
+      <tx-error-state *ngIf="targets.error" [message]="targets.error.message" (retry)="targets.reload()"></tx-error-state>
+      <ng-container *ngIf="targets.loaded && !targets.error">
+        <div class="tx-row typebar">
+          <tx-segmented [options]="typeOptions" [value]="targetType" (valueChange)="setType($event)" label="Target type"></tx-segmented>
+          <button type="button" class="tx-btn sm" (click)="useCurrent()" [disabled]="loadingCurrent"><span *ngIf="loadingCurrent" class="tx-spinner"></span> Use current weights</button>
+        </div>
+
+        <div class="tx-alert err" *ngIf="saveError" role="alert">{{ saveError }}</div>
+
+        <form class="editor" (ngSubmit)="save()" novalidate>
+          <div class="erow" *ngFor="let g of rows.controls; let i = index" [formGroup]="g">
+            <div class="tx-field">
+              <label [for]="'tk-' + i">{{ targetType === 'INSTRUMENT' ? 'Stock' : 'Sector' }}</label>
+              <select [id]="'tk-' + i" class="tx-input" formControlName="key">
+                <option value="" disabled>Choose…</option>
+                <option *ngFor="let o of optionsFor(i)" [value]="o">{{ o }}</option>
+                <option *ngIf="g.controls.key.value && !optionsFor(i).includes(g.controls.key.value)" [value]="g.controls.key.value">{{ g.controls.key.value }}</option>
+              </select>
+              <small class="tx-field-error" *ngIf="controlError(g.controls.key) as e">{{ e }}</small>
+            </div>
+            <div class="tx-field">
+              <label [for]="'tp-' + i">Target %</label>
+              <input [id]="'tp-' + i" class="tx-input" type="text" inputmode="decimal" autocomplete="off" formControlName="percent" placeholder="0.00" />
+              <small class="tx-field-error" *ngIf="controlError(g.controls.percent) as e">{{ e }}</small>
+            </div>
+            <button type="button" class="tx-btn sm danger rm" (click)="removeRow(i)" [attr.aria-label]="'Remove row ' + (i + 1)">Remove</button>
+          </div>
+          <div class="tx-alert err" *ngIf="rows.errors?.['dup'] && rows.touched">Each key can only appear once.</div>
+          <p class="muted empty" *ngIf="!rows.length">No targets yet. Add a row, or start from your current weights.</p>
+
+          <div class="foot">
+            <button type="button" class="tx-btn sm" (click)="addRow()" [disabled]="!canAddRow">+ Add row</button>
+            <tx-gauge [value]="sumRounded" [max]="100" label="Allocated"></tx-gauge>
+            <div class="gtext" [class.warn]="over"><strong>{{ gaugeLabel }}</strong></div>
+            <span class="tx-spacer"></span>
+            <button type="submit" class="tx-btn primary" [disabled]="!!saveBlockedReason || saving" [attr.title]="saveBlockedReason || null">
+              <span *ngIf="saving" class="tx-spinner"></span> Save targets
+            </button>
+          </div>
+          <p class="tx-field-error" *ngIf="saveBlockedReason">{{ saveBlockedReason }}</p>
+        </form>
+      </ng-container>
+    </tx-panel>
+
+    <!-- 3. Rebalance -->
+    <tx-panel kicker="3 · REBALANCE" title="Suggested trades" class="block">
+      <div actions><button type="button" class="tx-btn sm" (click)="compute()" [disabled]="!canRebalance || suggestions.loading || running">Compute suggestions</button></div>
+      <p class="muted note" *ngIf="!canRebalance">Rebalancing works with <strong>stock</strong> targets. {{ savedType === 'SECTOR' ? 'Your saved targets are by sector: switch them to stocks above and save.' : 'Save stock targets above to enable it.' }}</p>
+      <tx-skeleton *ngIf="suggestions.loading" [rows]="3"></tx-skeleton>
+      <tx-error-state *ngIf="suggestions.error" [message]="suggestions.error.message" (retry)="suggestions.reload()"></tx-error-state>
+      <tx-empty-state *ngIf="suggestions.data && !suggestions.data.length" title="Already on target" message="No trades are needed to match your targets."></tx-empty-state>
+
+      <ng-container *ngIf="suggestions.data?.length">
+        <div class="tx-table-wrap" data-lenis-prevent>
+          <table class="tx-table">
+            <thead><tr><th></th><th>Stock</th><th>Side</th><th class="num">Qty</th><th class="num hide-sm">Est. price</th><th class="num">Est. amount</th><th class="num hide-sm">Weight now</th><th class="num hide-sm">Target</th></tr></thead>
+            <tbody>
+              <tr *ngFor="let s of suggestions.data; trackBy: tr">
+                <td><input type="checkbox" [checked]="selected.has(s.ticker)" (change)="toggleSel(s.ticker)" [disabled]="running" [attr.aria-label]="'Include ' + s.ticker" /></td>
+                <td data-label="Stock"><strong>{{ s.ticker }}</strong></td>
+                <td data-label="Side"><span class="tx-pill" [class.pos]="s.side === 'BUY'" [class.neg]="s.side === 'SELL'">{{ s.side }}</span></td>
+                <td data-label="Qty" class="num">{{ s.quantity | qty }}</td>
+                <td data-label="Est. price" class="num hide-sm">{{ s.estimatedPrice | money: false }}</td>
+                <td data-label="Est. amount" class="num">{{ s.estimatedAmount | money }}</td>
+                <td data-label="Weight now" class="num hide-sm">{{ s.currentWeightPct | pct: false }}</td>
+                <td data-label="Target" class="num hide-sm">{{ s.targetWeightPct | pct: false }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="exec">
+          <span class="muted">Sells {{ sellTotal | money }} · Buys {{ buyTotal | money }}</span>
+          <button type="button" class="tx-btn primary" (click)="executeSelected()" [disabled]="!chosen.length || running">Execute selected ({{ chosen.length }})</button>
+        </div>
+      </ng-container>
+
+      <ol class="steps" *ngIf="steps.length" aria-live="polite">
+        <li *ngFor="let st of steps" [attr.data-status]="st.status">
+          <span class="ico" aria-hidden="true">{{ st.status === 'ok' ? '✓' : st.status === 'error' ? '✕' : st.status === 'running' ? '…' : '·' }}</span>
+          <span>{{ st.s.side }} {{ st.s.quantity | qty }} {{ st.s.ticker }}</span>
+          <span class="muted" *ngIf="st.status === 'skipped'">skipped</span>
+          <span class="tx-field-error" *ngIf="st.status === 'error'">{{ st.error }}</span>
+        </li>
+      </ol>
+    </tx-panel>
   </div>
 </div>

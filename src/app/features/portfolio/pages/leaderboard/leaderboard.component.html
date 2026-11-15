@@ -2,6 +2,48 @@
   <div class="tx-container">
     <tx-module-header kicker="PORTFOLIO / LEADERBOARD" title="Leaderboard"></tx-module-header>
     <tx-module-tabs [tabs]="tabs"></tx-module-tabs>
-    <tx-empty-state title="Leaderboard" message="This page is built in a later phase."></tx-empty-state>
+
+    <div class="bar">
+      <tx-segmented [options]="limitOptions" [value]="'' + limit" (valueChange)="setLimit($event)" label="How many traders"></tx-segmented>
+      <small class="muted">Ranked by total return. Names are shortened for privacy.</small>
+    </div>
+
+    <tx-skeleton *ngIf="board.loading && !board.data" [rows]="6" [height]="30"></tx-skeleton>
+    <tx-error-state *ngIf="board.error" [message]="board.error.message" (retry)="board.reload()"></tx-error-state>
+    <tx-empty-state *ngIf="board.data && !board.data.length" title="No ranking yet" message="Portfolios appear here once traders have made their first trades."></tx-empty-state>
+
+    <ng-container *ngIf="board.data?.length">
+      <!-- Podium -->
+      <div class="podium" aria-label="Top three">
+        <article *ngFor="let e of podium; trackBy: trackRank" class="tx-panel step" [class.me]="e.isMe" [attr.data-rank]="e.rank">
+          <span class="rank mono">#{{ e.rank }}</span>
+          <strong>{{ e.displayName }}<span *ngIf="e.isMe" class="tx-pill silver">YOU</span></strong>
+          <tx-delta [value]="e.totalReturnPct"></tx-delta>
+          <small class="muted num">{{ e.totalValue | money }}</small>
+        </article>
+      </div>
+
+      <tx-panel *ngIf="rest.length || pinned" class="block">
+        <div class="tx-table-wrap" data-lenis-prevent>
+          <table class="tx-table">
+            <thead><tr><th>Rank</th><th>Trader</th><th class="num">Return</th><th class="num">Value</th></tr></thead>
+            <tbody>
+              <tr *ngFor="let e of rest; trackBy: trackRank" [class.me]="e.isMe">
+                <td data-label="Rank" class="mono">#{{ e.rank }}</td>
+                <td data-label="Trader">{{ e.displayName }}<span *ngIf="e.isMe" class="tx-pill silver you">YOU</span></td>
+                <td data-label="Return" class="num"><tx-delta [value]="e.totalReturnPct"></tx-delta></td>
+                <td data-label="Value" class="num">{{ e.totalValue | money }}</td>
+              </tr>
+              <tr *ngIf="pinned as me" class="me pinned">
+                <td data-label="Rank" class="mono">#{{ me.rank }}</td>
+                <td data-label="Trader">{{ me.displayName }}<span class="tx-pill silver you">YOU</span></td>
+                <td data-label="Return" class="num"><tx-delta [value]="me.totalReturnPct"></tx-delta></td>
+                <td data-label="Value" class="num">{{ me.totalValue | money }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </tx-panel>
+    </ng-container>
   </div>
 </div>

@@ -2,6 +2,47 @@
   <div class="tx-container">
     <tx-module-header kicker="PORTFOLIO / PERFORMANCE" title="Performance"></tx-module-header>
     <tx-module-tabs [tabs]="tabs"></tx-module-tabs>
-    <tx-empty-state title="Performance" message="This page is built in a later phase."></tx-empty-state>
+
+    <tx-panel kicker="EQUITY CURVE" title="Value over time" class="block">
+      <app-equity-curve [height]="340" (loaded)="onLoaded($event)"></app-equity-curve>
+    </tx-panel>
+
+    <div class="tx-alert warn" *ngIf="sparse">Only a few daily snapshots exist so far, so these statistics are still thin. Snapshots are taken at market close.</div>
+
+    <ng-container *ngIf="perf as p">
+      <div class="tx-grid-4 block">
+        <tx-metric-card kicker="START VALUE" [value]="p.startValue | money" [sub]="p.from | tunisTime: 'date'"></tx-metric-card>
+        <tx-metric-card kicker="END VALUE" [value]="p.endValue | money" [sub]="p.to | tunisTime: 'date'"></tx-metric-card>
+        <tx-metric-card kicker="PERIOD RETURN" [value]="p.periodReturnPct | pct" [valueClass]="p.periodReturnPct > 0 ? 'pos' : p.periodReturnPct < 0 ? 'neg' : ''"></tx-metric-card>
+        <tx-metric-card kicker="TOTAL RETURN" [value]="p.totalReturnPct | pct" [valueClass]="p.totalReturnPct > 0 ? 'pos' : p.totalReturnPct < 0 ? 'neg' : ''"></tx-metric-card>
+        <tx-metric-card kicker="REALIZED P&L" [value]="p.realizedPnl | money: true: true" [valueClass]="p.realizedPnl > 0 ? 'pos' : p.realizedPnl < 0 ? 'neg' : ''"></tx-metric-card>
+        <tx-metric-card kicker="UNREALIZED P&L" [value]="p.unrealizedPnl | money: true: true" [valueClass]="p.unrealizedPnl > 0 ? 'pos' : p.unrealizedPnl < 0 ? 'neg' : ''"></tx-metric-card>
+        <tx-metric-card kicker="WINS / LOSSES" [value]="p.winningTrades + ' / ' + p.losingTrades" sub="Closed trades"></tx-metric-card>
+        <article class="tx-metric-card ring">
+          <div class="tx-metric-header"><span>WIN RATE</span></div>
+          <tx-gauge [value]="p.winRatePct" [max]="100" label="Win rate" [display]="(p.winRatePct | pct: false)"></tx-gauge>
+        </article>
+      </div>
+
+      <div class="tx-grid-2 block">
+        <tx-panel kicker="POSITIONS" title="Best and worst">
+          <ul class="bw">
+            <li *ngIf="p.bestPosition as b"><span class="tx-kicker">BEST</span><button type="button" class="link" (click)="selected = b.ticker"><strong>{{ b.ticker }}</strong></button><tx-delta [value]="b.unrealizedPnlPct"></tx-delta></li>
+            <li *ngIf="p.worstPosition as w"><span class="tx-kicker">WORST</span><button type="button" class="link" (click)="selected = w.ticker"><strong>{{ w.ticker }}</strong></button><tx-delta [value]="w.unrealizedPnlPct"></tx-delta></li>
+          </ul>
+          <tx-empty-state *ngIf="!p.bestPosition && !p.worstPosition" title="No open positions" message="Best and worst appear once you hold stocks."></tx-empty-state>
+        </tx-panel>
+
+        <tx-panel kicker="DAILY RETURNS" title="Day-to-day change">
+          <svg *ngIf="cols.length" class="cols" role="img" [attr.aria-label]="'Daily returns, last ' + cols.length + ' days'" [attr.viewBox]="'0 0 ' + width + ' ' + colH" preserveAspectRatio="none">
+            <line x1="0" [attr.y1]="colH / 2" [attr.x2]="width" [attr.y2]="colH / 2" class="axis" />
+            <rect *ngFor="let c of cols" [attr.x]="c.x + 1" [attr.y]="c.neg ? colH / 2 : colH / 2 - c.h" width="8" [attr.height]="c.h" [class.n]="c.neg" [class.p]="!c.neg"><title>{{ c.label }}</title></rect>
+          </svg>
+          <tx-empty-state *ngIf="!cols.length" title="Not enough points" message="Daily returns need at least two daily snapshots."></tx-empty-state>
+        </tx-panel>
+      </div>
+    </ng-container>
   </div>
 </div>
+
+<app-position-drawer [ticker]="selected" (closed)="selected = null"></app-position-drawer>

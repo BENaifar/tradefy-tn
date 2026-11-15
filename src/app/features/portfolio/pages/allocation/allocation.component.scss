@@ -1,1 +1,25 @@
 @use '../../../../shared/ui/styles/index' as *;
+
+:host { display: block; }
+.block { display: block; margin-bottom: 18px; }
+.see { display: grid; grid-template-columns: minmax(260px, 340px) minmax(0, 1fr); gap: 24px; align-items: start; }
+.bulletcol { width: 200px; }
+.bullet { position: relative; height: 8px; border-radius: 4px; background: rgba(255, 255, 255, 0.07);
+  .fill { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 4px; background: var(--silver-muted); }
+  .tick { position: absolute; top: -4px; bottom: -4px; width: 2px; margin-left: -1px; background: #fff; border-radius: 1px; }
+  &.hatched .fill { background: repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.55) 0 2px, transparent 2px 5px); } }
+.cash td { background: rgba(255, 255, 255, 0.02); }
+.typebar { margin-bottom: 14px; }
+.editor { display: flex; flex-direction: column; gap: 12px; }
+.erow { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) auto; gap: 12px; align-items: start; .rm { margin-top: 20px; } }
+.empty { font-size: 0.74rem; }
+.foot { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; padding-top: 12px; border-top: 1px solid var(--tx-border); }
+.gtext { font-size: 0.72rem; &.warn strong { color: var(--warn); } }
+.note { font-size: 0.74rem; line-height: 1.6; margin: 0 0 12px; }
+.exec { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-top: 14px; font-size: 0.72rem; }
+.steps { margin: 16px 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 6px; font-size: 0.74rem;
+  li { display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
+  .ico { width: 16px; text-align: center; }
+  li[data-status='ok'] .ico { color: var(--pos); } li[data-status='error'] .ico { color: var(--neg); } li[data-status='skipped'] { opacity: 0.55; } }
+@media (max-width: 1050px) { .see { grid-template-columns: 1fr; } }
+@media (max-width: 768px) { .erow { grid-template-columns: 1fr; .rm { margin-top: 0; } } }
