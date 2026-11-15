@@ -1,0 +1,11 @@
+<div class="rb">
+  <div class="cap"><span class="l">{{ label }}</span></div>
+  <svg role="img" [attr.aria-label]="aria" [attr.viewBox]="'0 0 ' + width + ' 16'" [attr.width]="width" height="16">
+    <rect [attr.x]="pad" y="6" [attr.width]="width - pad * 2" height="4" rx="2" class="track" />
+    <ng-container *ngIf="valid">
+      <rect [attr.x]="pad" y="6" [attr.width]="x - pad" height="4" rx="2" class="fill" />
+      <circle [attr.cx]="x" cy="8" r="5" class="dot"><title>{{ fmt(value) }}</title></circle>
+    </ng-container>
+  </svg>
+  <div class="ends num"><span>{{ fmt(min) }}</span><span>{{ fmt(max) }}</span></div>
+</div>

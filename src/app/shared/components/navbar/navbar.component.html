@@ -18,6 +18,14 @@
       <a href="/#ticker" (click)="$event.preventDefault(); scrollTo('#ticker')" class="nav-link">Markets</a>
       <a href="/#ai-system" (click)="$event.preventDefault(); scrollTo('#ai-system')" class="nav-link">Intelligence</a>
       <a href="/#features" (click)="$event.preventDefault(); scrollTo('#features')" class="nav-link">Platform</a>
+      <!-- MARKET-PORTFOLIO: start -->
+      <ng-container *ngIf="authService.currentUser$ | async">
+        <a routerLink="/markets" routerLinkActive="active" class="nav-link">Markets</a>
+        <a routerLink="/chart" routerLinkActive="active" class="nav-link">Charts</a>
+        <a routerLink="/portfolio" routerLinkActive="active" class="nav-link">Portfolio</a>
+        <a routerLink="/watchlist" routerLinkActive="active" class="nav-link">Watchlist</a>
+      </ng-container>
+      <!-- MARKET-PORTFOLIO: end -->
     </nav>
 
     <!-- Auth Actions -->

@@ -1,0 +1,8 @@
+@use '../../styles/index' as *;
+
+:host { display: inline-block; }
+.delta { font-variant-numeric: tabular-nums; font-size: inherit; white-space: nowrap; }
+.arrow { font-size: 0.7em; }
+.pos { color: var(--pos, #4ade80); }
+.neg { color: var(--neg, #f87171); }
+.flat { color: rgba(255, 255, 255, 0.5); }

@@ -1,0 +1,16 @@
+<span class="wrap" aria-live="polite" *ngIf="{ s: status.status$ | async, st: stomp.state$ | async, stale: quotes.stale$ | async } as v">
+  <span *ngIf="v.s && !isLiveSession(v.s); else liveTpl" class="tx-pill" [attr.title]="'Live prices resume at ' + hhmm(v.s.sessionOpen) + ' Tunis time'">MARKET CLOSED</span>
+  <ng-template #liveTpl>
+    <span class="tx-pill" [class.silver]="v.st === 'live'" [class.warn]="v.st === 'reconnecting' || v.st === 'offline'">
+      <i class="dot" [class.on]="v.st === 'live'"></i>
+      <ng-container [ngSwitch]="v.st">
+        <ng-container *ngSwitchCase="'live'">LIVE</ng-container>
+        <ng-container *ngSwitchCase="'connecting'">CONNECTING</ng-container>
+        <ng-container *ngSwitchCase="'reconnecting'">RECONNECTING</ng-container>
+        <ng-container *ngSwitchCase="'offline'">OFFLINE</ng-container>
+        <ng-container *ngSwitchDefault>PAUSED</ng-container>
+      </ng-container>
+    </span>
+    <span *ngIf="v.stale && v.st === 'live'" class="tx-pill warn">Prices may be delayed</span>
+  </ng-template>
+</span>

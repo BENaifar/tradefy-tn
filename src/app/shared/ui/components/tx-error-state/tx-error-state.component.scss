@@ -1,0 +1,4 @@
+@use '../../styles/index' as *;
+
+:host { display: block; @include tx-tokens; }
+.tx-alert { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin: 0; }

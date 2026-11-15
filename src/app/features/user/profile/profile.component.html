@@ -34,6 +34,25 @@
           <span>User directory</span><small>{{ usersList.length || '—' }}</small>
         </button>
       </ng-container>
+      <!-- MARKET-PORTFOLIO: start -->
+      <span class="nav-section-label">MARKETS & PORTFOLIO</span>
+      <button type="button" routerLink="/markets">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V5M4 19H20M8 15L12 10L15 13L20 7"/></svg>
+        <span>Markets</span><small>↗</small>
+      </button>
+      <button type="button" routerLink="/chart">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4V20M7 8H5V16H9V8ZM17 4V20M17 6H15V13H19V6Z"/></svg>
+        <span>Charts</span><small>↗</small>
+      </button>
+      <button type="button" routerLink="/portfolio">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8H20V20H4ZM9 8V5H15V8"/></svg>
+        <span>Portfolio</span><small>↗</small>
+      </button>
+      <button type="button" routerLink="/watchlist">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4L14.5 9L20 9.8L16 13.6L17 19L12 16.4L7 19L8 13.6L4 9.8L9.5 9Z"/></svg>
+        <span>Watchlist</span><small>↗</small>
+      </button>
+      <!-- MARKET-PORTFOLIO: end -->
     </nav>
 
     <div class="sidebar-footer">

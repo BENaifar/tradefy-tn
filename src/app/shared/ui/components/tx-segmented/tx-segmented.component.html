@@ -1,0 +1,6 @@
+<div class="seg" role="radiogroup" [attr.aria-label]="label">
+  <button *ngFor="let o of options; let i = index" type="button" role="radio"
+          [class.active]="o.value === value" [attr.aria-checked]="o.value === value"
+          [disabled]="o.disabled" [attr.title]="o.title || null" [tabindex]="o.value === value || (value === null && i === 0) ? 0 : -1"
+          (click)="select(o)" (keydown)="onKey($event, i)">{{ o.label }}</button>
+</div>

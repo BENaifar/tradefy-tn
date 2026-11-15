@@ -1,0 +1,23 @@
+@use 'tokens' as *;
+
+.tx-table-wrap { overflow-x: auto; }
+.tx-table { width: 100%; border-collapse: collapse; font-size: 0.7rem;
+  th { padding: 12px 15px; border-bottom: 1px solid var(--tx-border); background: #0c0e0d; color: rgba(255, 255, 255, 0.36);
+    font: 0.54rem $mono; letter-spacing: 0.1em; text-align: left; text-transform: uppercase; white-space: nowrap;
+    &.sortable { cursor: pointer; user-select: none; &:hover { color: #fff; } }
+    &.num { text-align: right; } }
+  td { padding: 13px 15px; border-bottom: 1px solid var(--tx-border-soft); color: rgba(255, 255, 255, 0.72); vertical-align: middle;
+    &.num { text-align: right; font-variant-numeric: tabular-nums; } }
+  tbody tr:hover { background: rgba(255, 255, 255, 0.025); }
+  tr.clickable { cursor: pointer; }
+  .ticker-cell strong { display: block; color: #fff; font-size: 0.72rem; }
+  .ticker-cell small { color: var(--tx-muted); font-size: 0.58rem; }
+}
+@media (max-width: 768px) {
+  .tx-table, .tx-table tbody, .tx-table tr, .tx-table td { display: block; width: 100%; }
+  .tx-table thead { position: absolute; left: -9999px; }
+  .tx-table tr { margin-bottom: 10px; border: 1px solid var(--tx-border); border-radius: 8px; padding: 6px 0; }
+  .tx-table td { display: flex; justify-content: space-between; gap: 12px; border: 0; padding: 6px 14px; text-align: right;
+    &::before { content: attr(data-label); color: var(--tx-muted); font: 0.54rem $mono; letter-spacing: 0.1em; text-transform: uppercase; text-align: left; }
+    &.hide-sm { display: none; } }
+}

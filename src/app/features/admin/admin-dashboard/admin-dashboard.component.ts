@@ -4,7 +4,7 @@ import { AuthService } from '../../../core/services/auth.service';
 import { UserService } from '../../../core/services/user.service';
 import { User } from '../../../core/models/user.model';
 
-type AdminView = 'home' | 'users' | 'security' | 'settings';
+type AdminView = 'home' | 'users' | 'security' | 'settings' | 'market' | 'portfolios'; // MARKET-PORTFOLIO: extended
 
 @Component({
   selector: 'app-admin-dashboard',
@@ -37,7 +37,7 @@ export class AdminDashboardComponent implements OnInit {
   get adminCount(): number { return this.users.filter(user => user.role === 'ROLE_ADMIN').length; }
   get sidebarExpanded(): boolean { return window.innerWidth <= 1050 ? this.sidebarOpen : !this.sidebarCollapsed; }
   get pageTitle(): string {
-    return ({ home: 'Command overview', users: 'User management', security: 'Security center', settings: 'Platform settings' })[this.activeView];
+    return ({ home: 'Command overview', users: 'User management', security: 'Security center', settings: 'Platform settings', market: 'Market data', portfolios: 'Portfolios' })[this.activeView]; // MARKET-PORTFOLIO: extended
   }
 
   setView(view: AdminView): void {

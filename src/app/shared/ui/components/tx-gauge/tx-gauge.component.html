@@ -1,0 +1,8 @@
+<svg role="img" [attr.aria-label]="aria" viewBox="0 0 120 120" [style.width.px]="size" [style.height.px]="size">
+  <g transform="rotate(-90 60 60)">
+    <circle class="track" cx="60" cy="60" [attr.r]="r" fill="none" stroke-width="9" />
+    <circle class="prog" cx="60" cy="60" [attr.r]="r" fill="none" stroke-width="9" stroke-linecap="round" [class.over]="over" [attr.stroke-dasharray]="dash" />
+  </g>
+  <text x="60" y="62" text-anchor="middle" class="v">{{ shown }}</text>
+  <text x="60" y="78" text-anchor="middle" class="l">{{ label }}</text>
+</svg>

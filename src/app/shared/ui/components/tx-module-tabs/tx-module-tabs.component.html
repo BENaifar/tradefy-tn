@@ -1,0 +1,3 @@
+<nav class="tabs" aria-label="Section navigation" data-lenis-prevent-wheel>
+  <a *ngFor="let t of tabs" [routerLink]="t.link" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: !!t.exact }">{{ t.label }}</a>
+</nav>

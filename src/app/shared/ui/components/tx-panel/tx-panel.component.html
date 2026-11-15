@@ -1,0 +1,7 @@
+<section class="tx-panel">
+  <div class="tx-panel-heading" *ngIf="kicker || title">
+    <div><span class="tx-kicker">{{ kicker }}</span><h3>{{ title }}</h3></div>
+    <div class="actions"><ng-content select="[actions]"></ng-content></div>
+  </div>
+  <ng-content></ng-content>
+</section>

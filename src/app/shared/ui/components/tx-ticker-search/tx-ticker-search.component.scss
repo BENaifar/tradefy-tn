@@ -1,0 +1,12 @@
+@use '../../styles/index' as *;
+
+:host { display: block; position: relative; @include tx-tokens; }
+.wrap { position: relative; min-width: 220px; &.compact { min-width: 160px; } }
+.tx-input { min-height: 38px; }
+.list { position: absolute; z-index: 60; top: calc(100% + 6px); left: 0; right: 0; min-width: 280px; max-height: 320px; overflow-y: auto; margin: 0; padding: 4px; list-style: none;
+  border: 1px solid var(--silver-line); border-radius: 8px; background: #0b0c0c; box-shadow: 0 18px 50px rgba(0, 0, 0, 0.7);
+  &.empty { padding: 14px; color: var(--tx-muted); font-size: 0.7rem; }
+  li { display: grid; grid-template-columns: 70px minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 8px 10px; border-radius: 6px; cursor: pointer; font-size: 0.7rem;
+    strong { color: #fff; } span { color: var(--tx-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    em { font-style: normal; font-size: 0.64rem; color: var(--tx-muted); }
+    &.active { background: rgba(255, 255, 255, 0.07); } } }

@@ -1,0 +1,9 @@
+@use '../../styles/index' as *;
+
+:host { display: block; width: 100%; @include tx-tokens; }
+svg { display: block; overflow: visible; }
+.cap .l { font: 0.52rem $mono; letter-spacing: 0.1em; color: var(--tx-muted); text-transform: uppercase; }
+.track { fill: rgba(255, 255, 255, 0.1); }
+.fill { fill: var(--silver-dark); }
+.dot { fill: var(--silver-bright); stroke: #000; stroke-width: 2; }
+.ends { display: flex; justify-content: space-between; margin-top: 2px; font-size: 0.6rem; color: var(--tx-muted); }

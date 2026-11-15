@@ -1,0 +1,16 @@
+<header class="head">
+  <div class="title">
+    <span class="tx-kicker">{{ kicker }}</span>
+    <h1>{{ title }}</h1>
+    <div class="slot"><ng-content></ng-content></div>
+  </div>
+  <div class="actions">
+    <tx-ticker-search></tx-ticker-search>
+    <tx-market-status></tx-market-status>
+    <tx-live-badge></tx-live-badge>
+    <button type="button" class="tx-btn primary" (click)="trade()" title="Open the trade ticket (T)">Trade</button>
+  </div>
+</header>
+<tx-toast></tx-toast>
+<tx-confirm-dialog></tx-confirm-dialog>
+<ng-container #ticketHost></ng-container>

@@ -1,0 +1,4 @@
+@use '../../styles/index' as *;
+
+:host { display: inline-flex; align-items: center; gap: 6px; flex-wrap: wrap; @include tx-tokens; }
+.dot { width: 6px; height: 6px; border-radius: 50%; background: var(--silver-dark); &.on { background: var(--pos); box-shadow: 0 0 8px var(--pos-soft); } }

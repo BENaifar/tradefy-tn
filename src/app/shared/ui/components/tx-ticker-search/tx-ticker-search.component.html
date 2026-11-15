@@ -1,0 +1,14 @@
+<div class="wrap" [class.compact]="compact">
+  <input #box class="tx-input" type="search" maxlength="50" autocomplete="off" spellcheck="false"
+         role="combobox" aria-autocomplete="list" [attr.aria-expanded]="open" aria-controls="tx-ts-list" aria-label="Search instruments"
+         [placeholder]="placeholder" [ngModel]="text" (ngModelChange)="onInput($event)"
+         (focus)="onFocus()" (keydown)="onKey($event)" />
+  <ul *ngIf="open && results.length" id="tx-ts-list" class="list" role="listbox" data-lenis-prevent>
+    <li *ngFor="let r of results; let i = index" role="option" [class.active]="i === active" [attr.aria-selected]="i === active"
+        (mousedown)="$event.preventDefault(); pick(r)" (mouseenter)="active = i">
+      <strong>{{ r.ticker }}</strong><span>{{ r.name }}</span>
+      <em class="num" [class.pos]="r.changePercent > 0" [class.neg]="r.changePercent < 0">{{ r.changePercent | pct }}</em>
+    </li>
+  </ul>
+  <div *ngIf="open && !results.length && text.trim()" class="list empty">No instrument matches “{{ text.trim() }}”.</div>
+</div>

@@ -1,0 +1,8 @@
+<div *ngIf="open" class="scrim" (click)="closed.emit()"></div>
+<aside #panel class="panel" [class.open]="open" role="dialog" aria-modal="true" [attr.aria-hidden]="!open" [attr.aria-label]="title" tabindex="-1" (keydown)="onKeydown($event)">
+  <header>
+    <div><span class="tx-kicker">{{ kicker }}</span><h3>{{ title }}</h3></div>
+    <button type="button" class="tx-btn icon" (click)="closed.emit()" aria-label="Close panel">×</button>
+  </header>
+  <div class="body" data-lenis-prevent><ng-container *ngIf="open"><ng-content></ng-content></ng-container></div>
+</aside>

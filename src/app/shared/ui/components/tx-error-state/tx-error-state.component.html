@@ -1,0 +1,4 @@
+<div class="tx-alert err" role="alert">
+  <span>{{ message }}</span>
+  <button *ngIf="retryable" type="button" class="tx-btn sm" (click)="retry.emit()">Retry</button>
+</div>

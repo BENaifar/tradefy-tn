@@ -1,0 +1,10 @@
+<article class="tx-metric-card" [attr.title]="hint || null">
+  <div class="tx-metric-header"><span>{{ kicker }}</span><ng-content select="[corner]"></ng-content></div>
+  <strong class="num-left" [class]="valueClass">{{ value ?? '—' }}</strong>
+  <div class="foot">
+    <p *ngIf="sub">{{ sub }}</p>
+    <tx-delta *ngIf="delta !== undefined" [value]="delta" [kind]="deltaKind"></tx-delta>
+  </div>
+  <tx-sparkline *ngIf="sparkline && sparkline.length > 1" [values]="sparkline" [height]="28"></tx-sparkline>
+  <ng-content></ng-content>
+</article>

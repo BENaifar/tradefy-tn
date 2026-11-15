@@ -1,0 +1,41 @@
+// TradeX market & portfolio modules: tokens (copied look of the workspace, our own names).
+$mono: 'Courier New', monospace;
+
+@mixin tx-tokens {
+  --tx-bg: #030303;
+  --tx-panel: #090a0a;
+  --tx-panel-2: #0d0f0e;
+  --tx-border: rgba(255, 255, 255, 0.1);
+  --tx-border-soft: rgba(255, 255, 255, 0.065);
+  --tx-muted: rgba(255, 255, 255, 0.5);
+  --tx-soft: rgba(255, 255, 255, 0.68);
+  --silver-bright: #f4f6f8;
+  --silver: #c7cbd1;
+  --silver-muted: #9aa0a8;
+  --silver-dark: #666c75;
+  --silver-line: rgba(220, 224, 230, 0.28);
+  --silver-glow: rgba(226, 230, 236, 0.2);
+  --pos: var(--accent-green, #4ade80);
+  --neg: var(--accent-red, #f87171);
+  --pos-soft: rgba(74, 222, 128, 0.12);
+  --neg-soft: rgba(248, 113, 113, 0.12);
+  --warn: #e5c07b;
+  --warn-soft: rgba(229, 192, 123, 0.12);
+  --chart-up: #4ade80;
+  --chart-down: #f87171;
+  --chart-grid: rgba(255, 255, 255, 0.05);
+  --series-1: #f4f6f8;
+  --series-2: #9aa0a8;
+  --series-3: #c7cbd1;
+  --series-4: #666c75;
+  --series-5: #8fb3ff;
+  --series-6: #d0a2f7;
+}
+
+.tx-page {
+  @include tx-tokens;
+  display: block;
+  min-height: 100vh;
+  padding: 120px 0 80px;
+  color: #fff;
+}

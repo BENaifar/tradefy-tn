@@ -1,0 +1,9 @@
+@use '../../styles/index' as *;
+
+:host { display: block; margin-bottom: 18px; @include tx-tokens; }
+.head { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; flex-wrap: wrap; padding-bottom: 18px; }
+.title { min-width: 0;
+  h1 { margin-top: 6px; font-size: clamp(1.5rem, 2.8vw, 2.3rem); font-weight: 500; letter-spacing: -0.045em; } }
+.slot:empty { display: none; }
+.actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+@media (max-width: 768px) { .head { align-items: flex-start; } .actions { width: 100%; } }

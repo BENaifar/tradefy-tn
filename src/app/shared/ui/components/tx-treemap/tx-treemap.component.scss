@@ -1,0 +1,7 @@
+@use '../../styles/index' as *;
+
+:host { display: block; width: 100%; @include tx-tokens; }
+svg { display: block; }
+.tile { cursor: pointer; outline: none; &:hover rect, &:focus rect { stroke: rgba(255, 255, 255, 0.7); stroke-width: 1; } }
+.n { fill: #fff; font: 600 11px var(--font-body, sans-serif); pointer-events: none; }
+.p { fill: rgba(255, 255, 255, 0.85); font: 10px var(--font-body, sans-serif); font-variant-numeric: tabular-nums; pointer-events: none; }

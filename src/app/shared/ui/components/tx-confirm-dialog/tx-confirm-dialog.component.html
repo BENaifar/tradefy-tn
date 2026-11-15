@@ -1,0 +1,14 @@
+<div *ngIf="req" class="tx-backdrop" data-lenis-prevent (click)="cancel()">
+  <div #dialog class="tx-modal" role="alertdialog" aria-modal="true" aria-labelledby="tx-confirm-title" (click)="$event.stopPropagation()">
+    <h3 id="tx-confirm-title">{{ req.title }}</h3>
+    <p>{{ req.message }}</p>
+    <div *ngIf="req.requireText" class="tx-field req">
+      <label for="tx-confirm-input">Type {{ req.requireText }} to confirm</label>
+      <input id="tx-confirm-input" class="tx-input" type="text" autocomplete="off" [(ngModel)]="typed" (keydown.enter)="ok()" />
+    </div>
+    <div class="tx-modal-actions">
+      <button type="button" class="tx-btn" (click)="cancel()">Cancel</button>
+      <button type="button" class="tx-btn primary" [class.danger]="req.danger" [disabled]="!canConfirm" (click)="ok()">{{ req.confirmLabel || 'Confirm' }}</button>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,4 @@
+:host { display: block; width: 100%; }
+svg { display: block; width: 100%; fill: none; stroke: var(--silver-muted, #9aa0a8); stroke-width: 1.5; vector-effect: non-scaling-stroke; }
+polyline, line { vector-effect: non-scaling-stroke; }
+.flat { stroke-dasharray: 3 3; opacity: 0.4; }

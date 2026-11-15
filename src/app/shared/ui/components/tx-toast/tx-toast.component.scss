@@ -1,0 +1,11 @@
+@use '../../styles/index' as *;
+
+:host { @include tx-tokens; }
+.stack { position: fixed; z-index: 1200; right: 18px; bottom: 18px; display: flex; flex-direction: column; gap: 8px; width: min(360px, calc(100vw - 36px)); }
+.toast { display: flex; align-items: center; gap: 10px; padding: 11px 12px; border: 1px solid var(--tx-border); border-radius: 8px;
+  background: #0b0c0c; box-shadow: 0 14px 40px rgba(0, 0, 0, 0.6); font-size: 0.72rem; color: #fff;
+  &.error { border-color: rgba(248, 113, 113, 0.4); color: #fca5a5; }
+  &.success { border-color: var(--silver-line); } }
+.msg { flex: 1; line-height: 1.4; }
+.act { border: 1px solid var(--silver-line); border-radius: 5px; background: transparent; color: var(--silver-bright); font-size: 0.64rem; padding: 4px 8px; cursor: pointer; }
+.close { border: 0; background: transparent; color: var(--tx-muted); font-size: 1.1rem; cursor: pointer; line-height: 1; }

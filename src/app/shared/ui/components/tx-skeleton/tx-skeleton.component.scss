@@ -1,0 +1,4 @@
+@use '../../styles/index' as *;
+
+:host { display: block; @include tx-tokens; }
+.wrap { display: flex; flex-direction: column; gap: 10px; padding: 6px 0; }

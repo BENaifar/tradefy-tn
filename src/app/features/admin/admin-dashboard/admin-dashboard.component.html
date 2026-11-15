@@ -25,6 +25,25 @@
       <button type="button" [class.active]="activeView === 'settings'" (click)="setView('settings')">
         <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19 12L21 10L19 6L16 7L14 4H10L8 7L5 6L3 10L5 12L3 14L5 18L8 17L10 20H14L16 17L19 18L21 14Z"/></svg><span>Settings</span><small>04</small>
       </button>
+      <!-- MARKET-PORTFOLIO: start -->
+      <span class="nav-label secondary-label">MARKETS & PORTFOLIO</span>
+      <button type="button" [class.active]="activeView === 'market'" (click)="setView('market')">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V5M4 19H20M8 15L12 10L15 13L20 7"/></svg>
+        <span>Market data</span><small>05</small>
+      </button>
+      <button type="button" [class.active]="activeView === 'portfolios'" (click)="setView('portfolios')">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8H20V20H4ZM9 8V5H15V8"/></svg>
+        <span>Portfolios</span><small>06</small>
+      </button>
+      <button type="button" routerLink="/markets">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4V20M7 8H5V16H9V8ZM17 4V20M17 6H15V13H19V6Z"/></svg>
+        <span>Markets & charts</span><small>↗</small>
+      </button>
+      <button type="button" routerLink="/portfolio">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11L12 3L21 11V21H15V15H9V21H3Z"/></svg>
+        <span>My portfolio</span><small>↗</small>
+      </button>
+      <!-- MARKET-PORTFOLIO: end -->
     </nav>
 
     <div class="admin-profile">
@@ -106,6 +125,10 @@
         <p>{{ activeView === 'security' ? 'Identity monitoring and account protection controls are ready for backend telemetry.' : 'Platform preferences and operational policies will live here.' }}</p>
         <div class="panel placeholder-card"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3L19 6V11C19 16 16 19 12 21C8 19 5 16 5 11V6Z"/><path d="M9 12L11 14L15 10"/></svg><div><strong>Protected administration surface</strong><span>Only authorized administrators can access this route.</span></div></div>
       </section>
+      <!-- MARKET-PORTFOLIO: start -->
+      <section *ngIf="activeView === 'market'"><app-admin-market-ops></app-admin-market-ops></section>
+      <section *ngIf="activeView === 'portfolios'"><app-admin-portfolios></app-admin-portfolios></section>
+      <!-- MARKET-PORTFOLIO: end -->
     </main>
   </div>
 </div>

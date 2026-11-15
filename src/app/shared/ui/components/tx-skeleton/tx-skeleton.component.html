@@ -1,0 +1,3 @@
+<div class="wrap" role="status" aria-live="polite" aria-label="Loading">
+  <span *ngFor="let i of list" class="tx-skeleton" [style.height.px]="height" [style.width.%]="i % 3 === 2 ? 70 : 100"></span>
+</div>

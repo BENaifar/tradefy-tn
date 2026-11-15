@@ -1,0 +1,5 @@
+@use '../../styles/index' as *;
+
+:host { @include tx-tokens; }
+.req { margin-top: 16px; }
+.tx-btn.primary.danger { background: #f87171; color: #1a0707; }

@@ -1,0 +1,14 @@
+@use '../../styles/index' as *;
+
+:host { display: block; @include tx-tokens; }
+.donut { display: flex; align-items: center; gap: 22px; flex-wrap: wrap; justify-content: center; }
+svg { display: block; flex: none; }
+circle { transition: opacity 160ms ease; &.dim { opacity: 0.35; } }
+.lbl { fill: rgba(255, 255, 255, 0.5); font: 9px $mono; letter-spacing: 0.1em; text-transform: uppercase; }
+.val { fill: #fff; font: 600 15px var(--font-heading, sans-serif); font-variant-numeric: tabular-nums; }
+.legend { flex: 1; min-width: 150px; margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 4px; max-height: 240px; overflow-y: auto;
+  li { display: flex; align-items: center; gap: 9px; padding: 5px 8px; border-radius: 6px; font-size: 0.7rem; color: var(--tx-soft); cursor: default;
+    &.hl { background: rgba(255, 255, 255, 0.06); color: #fff; }
+    i { flex: none; width: 9px; height: 9px; border-radius: 2px; }
+    .name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .v { color: #fff; } } }

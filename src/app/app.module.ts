@@ -21,6 +21,11 @@ import { ForgotPasswordComponent } from './features/user/forgot-password/forgot-
 import { ResetPasswordComponent } from './features/user/reset-password/reset-password.component';
 import { ProfileComponent } from './features/user/profile/profile.component';
 import { AdminDashboardComponent } from './features/admin/admin-dashboard/admin-dashboard.component';
+// MARKET-PORTFOLIO: start
+import { SharedUiModule } from './shared/ui/shared-ui.module';
+import { MarketDataModule } from './features/market-data/market-data.module';
+import { PortfolioModule } from './features/portfolio/portfolio.module';
+// MARKET-PORTFOLIO: end
 
 @NgModule({
   declarations: [
@@ -36,6 +41,11 @@ import { AdminDashboardComponent } from './features/admin/admin-dashboard/admin-
     AdminDashboardComponent
   ],
   imports: [
+    // MARKET-PORTFOLIO: start
+    SharedUiModule,
+    MarketDataModule,
+    PortfolioModule,
+    // MARKET-PORTFOLIO: end
     BrowserModule,
     AppRoutingModule,
     HttpClientModule,

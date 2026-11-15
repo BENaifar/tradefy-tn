@@ -1,0 +1,23 @@
+<div class="donut">
+  <svg role="img" [attr.aria-label]="label" viewBox="0 0 200 200" [style.width.px]="size" [style.height.px]="size">
+    <defs>
+      <pattern id="tx-hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="3" height="6" fill="rgba(255,255,255,.55)" /></pattern>
+    </defs>
+    <g transform="rotate(-90 100 100)">
+      <circle cx="100" cy="100" [attr.r]="r" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="22" />
+      <circle *ngFor="let a of arcs(); let i = index" cx="100" cy="100" [attr.r]="r" fill="none" stroke-width="22"
+              [attr.stroke]="slices[i].hatched ? 'url(#tx-hatch)' : color(i)" [attr.stroke-dasharray]="a.dash" [attr.stroke-dashoffset]="a.offset"
+              [class.dim]="hover >= 0 && hover !== i" (mouseenter)="set(i)" (mouseleave)="set(-1)">
+        <title>{{ slices[i].label }}: {{ pct(slices[i].pct) }}</title>
+      </circle>
+    </g>
+    <text x="100" y="96" text-anchor="middle" class="lbl">{{ shownLabel }}</text>
+    <text x="100" y="118" text-anchor="middle" class="val">{{ shownValue }}</text>
+  </svg>
+  <ul class="legend">
+    <li *ngFor="let s of slices; let i = index" [class.hl]="hover === i" (mouseenter)="set(i)" (mouseleave)="set(-1)">
+      <i [style.background]="s.hatched ? 'repeating-linear-gradient(45deg, rgba(255,255,255,.55) 0 2px, transparent 2px 4px)' : color(i)"></i>
+      <span class="name">{{ s.label }}</span><span class="v num">{{ pct(s.pct) }}</span>
+    </li>
+  </ul>
+</div>

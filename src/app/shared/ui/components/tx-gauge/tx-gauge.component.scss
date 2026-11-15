@@ -1,0 +1,8 @@
+@use '../../styles/index' as *;
+
+:host { display: inline-block; @include tx-tokens; }
+svg { display: block; }
+.track { stroke: rgba(255, 255, 255, 0.08); }
+.prog { stroke: var(--silver-bright); &.over { stroke: var(--warn); } }
+.v { fill: #fff; font: 600 15px var(--font-heading, sans-serif); font-variant-numeric: tabular-nums; }
+.l { fill: rgba(255, 255, 255, 0.5); font: 7px $mono; letter-spacing: 0.1em; text-transform: uppercase; }

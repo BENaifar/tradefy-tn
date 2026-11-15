@@ -1,0 +1,8 @@
+@use 'tokens' as *;
+
+.tx-backdrop { position: fixed; z-index: 1000; inset: 0; display: grid; place-items: center; padding: 24px; overflow-y: auto;
+  background: rgba(0, 0, 0, 0.82); backdrop-filter: blur(10px); }
+.tx-modal { width: min(100%, 480px); padding: 26px; border: 1px solid rgba(255, 255, 255, 0.16); border-radius: 12px;
+  background: #0b0c0c; box-shadow: 0 25px 80px rgba(0, 0, 0, 0.8);
+  h3 { font-size: 1rem; margin-bottom: 10px; } p { color: var(--tx-soft); font-size: 0.78rem; line-height: 1.6; }
+  .tx-modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 22px; } }

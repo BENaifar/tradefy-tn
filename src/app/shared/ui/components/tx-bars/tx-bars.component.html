@@ -1,0 +1,10 @@
+<svg role="img" [attr.aria-label]="label" [attr.viewBox]="'0 0 ' + width + ' ' + height" [attr.width]="width" [attr.height]="height">
+  <line *ngIf="diverging" [attr.x1]="zeroX" y1="0" [attr.x2]="zeroX" [attr.y2]="height" class="axis" />
+  <g *ngFor="let it of items; let i = index; trackBy: trackById" [attr.transform]="'translate(0,' + (i * rowH + 2) + ')'">
+    <title>{{ it.label }}: {{ fmt(it.value) }}</title>
+    <text x="0" [attr.y]="rowH / 2 + 3" class="lbl">{{ it.label }}</text>
+    <rect [attr.x]="bar(it.value).x" y="5" [attr.width]="bar(it.value).w" [attr.height]="rowH - 10" rx="2"
+          [class.p]="diverging && it.value > 0" [class.n]="diverging && it.value < 0" [class.s]="!diverging" />
+    <text [attr.x]="width" [attr.y]="rowH / 2 + 3" text-anchor="end" class="val" [class.p]="it.value > 0" [class.n]="it.value < 0">{{ fmt(it.value) }}</text>
+  </g>
+</svg>

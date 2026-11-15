@@ -1,0 +1,17 @@
+@use 'tokens' as *;
+
+.tx-alert { margin-bottom: 14px; padding: 11px 13px; border: 1px solid; border-radius: 6px; font-size: 0.68rem;
+  &.err { border-color: rgba(248, 113, 113, 0.3); background: rgba(248, 113, 113, 0.08); color: #fca5a5; }
+  &.warn { border-color: rgba(229, 192, 123, 0.3); background: var(--warn-soft); color: var(--warn); }
+  &.ok { border-color: var(--silver-line); background: rgba(244, 246, 248, 0.08); color: var(--silver-bright); } }
+.tx-pill { display: inline-flex; align-items: center; gap: 6px; padding: 4px 8px; border: 1px solid var(--tx-border); border-radius: 999px;
+  font: 0.54rem $mono; letter-spacing: 0.08em; text-transform: uppercase; color: var(--tx-soft);
+  &.silver { border-color: var(--silver-line); background: rgba(244, 246, 248, 0.08); color: var(--silver-bright); }
+  &.warn { border-color: rgba(229, 192, 123, 0.35); background: var(--warn-soft); color: var(--warn); }
+  &.pos { color: var(--pos); } &.neg { color: var(--neg); } }
+.tx-skeleton { display: block; border-radius: 6px; min-height: 14px; background: linear-gradient(90deg, rgba(255,255,255,.04), rgba(255,255,255,.09), rgba(255,255,255,.04));
+  background-size: 200% 100%; animation: txsk 1.4s ease-in-out infinite; }
+@keyframes txsk { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+@media (prefers-reduced-motion: reduce) { .tx-skeleton { animation: none; } }
+.tx-empty { padding: 34px 18px; text-align: center; color: var(--tx-muted); font-size: 0.74rem;
+  strong { display: block; margin-bottom: 6px; color: #fff; font-size: 0.82rem; } }

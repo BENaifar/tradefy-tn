@@ -1,0 +1,8 @@
+<ng-container *ngIf="store.status$ | async as s">
+  <span class="tx-pill" [class.silver]="s.open" aria-live="polite">
+    <i class="dot" [class.on]="s.open"></i>
+    <ng-container *ngIf="s.open; else closed">{{ s.provider }} OPEN · closes {{ hhmm(s.sessionClose) }}</ng-container>
+    <ng-template #closed>{{ s.provider }} CLOSED · opens {{ nextOpen(s) }}</ng-template>
+  </span>
+  <span *ngIf="s.provider === 'SIMULATED'" class="tx-pill warn" title="Prices come from the simulator, not the real BVMT">SIMULATED</span>
+</ng-container>

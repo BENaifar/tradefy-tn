@@ -1,0 +1,7 @@
+<div class="stack" aria-live="polite" role="status">
+  <div *ngFor="let t of toasts.toasts$ | async; trackBy: trackById" class="toast" [class.error]="t.kind === 'error'" [class.success]="t.kind === 'success'">
+    <span class="msg">{{ t.message }}</span>
+    <button *ngIf="t.action" type="button" class="act" (click)="toasts.runAction(t.id)">{{ t.action.label }}</button>
+    <button type="button" class="close" (click)="toasts.dismiss(t.id, true)" aria-label="Dismiss notification">×</button>
+  </div>
+</div>
