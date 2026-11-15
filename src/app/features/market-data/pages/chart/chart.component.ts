@@ -8,6 +8,7 @@ import { MARKET_TABS } from '../../../../shared/ui/util/module-tabs';
 import { lsGet, lsSet } from '../../../../shared/ui/util/safe-storage';
 import { Section } from '../../../../shared/ui/util/section';
 import { ToastService } from '../../../../shared/ui/util/toast.service';
+import { MAX_INDICATORS, MAX_PANES, PALETTE, validateSavedIndicators } from './chart-prefs';
 import { CandleChartComponent, ChartIndicator, ChartTrade } from '../../components/candle-chart/candle-chart.component';
 import { IndicatorAdd, IndicatorUpdate, PresetName } from '../../components/indicator-panel/indicator-panel.component';
 import { indicatorLabel } from '../../models/indicator-label';
@@ -44,7 +45,6 @@ const TIMEFRAMES: { value: CandleInterval; label: string; title: string }[] = [
 const RANGES: RangeKey[] = ['1D', '5D', '1M', '3M', '6M', '1Y', '5Y', 'MAX'];
 const DEFAULT_RANGE: Record<CandleInterval, RangeKey> = { M5: '1D', M15: '5D', M30: '5D', H1: '1M', H2: '1M', H4: '3M', D1: '1Y', W1: '5Y' };
 const INTRADAY: CandleInterval[] = ['M5', 'M15', 'M30', 'H1', 'H2', 'H4'];
-const PALETTE = ['#f4f6f8', '#8fb3ff', '#d0a2f7', '#c7cbd1', '#9aa0a8', '#666c75', '#e5c07b', '#4ade80'];
 const PRESETS: Record<PresetName, { code: string; values: number[] }[]> = {
   Trend: [{ code: 'SMA', values: [20] }, { code: 'SMA', values: [50] }],
   Momentum: [{ code: 'RSI', values: [14] }, { code: 'MACD', values: [] }],
@@ -293,20 +293,9 @@ export class ChartComponent implements OnInit, OnDestroy {
 
   /** Saved indicators are validated against the catalog: unknown codes and out-of-range params are dropped. */
   private restore(): void {
-    const saved = this.prefs?.indicators;
-    if (!Array.isArray(saved) || !this.catalog.data) return;
-    for (const s of saved) {
-      const d = this.def(s?.code);
-      if (!d || this.instances.length >= 8) continue;
-      if (d.placement === 'PANE' && this.panes() >= 3) continue;
-      const params: Record<string, number> = {};
-      for (const p of d.params) {
-        const v = s.params?.[p.name];
-        const ok = typeof v === 'number' && Number.isFinite(v) && v >= p.min && v <= p.max && (p.type !== 'INT' || Number.isInteger(v));
-        params[p.name] = ok ? v : p.defaultValue;
-      }
-      const color = typeof s.color === 'string' && /^#[0-9a-f]{6}$/i.test(s.color) ? s.color : this.nextColor();
-      this.instances.push({ id: `ind-${++this.seq}`, code: d.code, params, color, visible: s.visible !== false, status: 'loading', error: '', result: null });
+    if (!this.catalog.data) return;
+    for (const s of validateSavedIndicators(this.prefs?.indicators, this.catalog.data)) {
+      this.instances.push({ id: `ind-${++this.seq}`, code: s.code, params: s.params, color: s.color, visible: s.visible, status: 'loading', error: '', result: null });
     }
     this.instances.forEach(i => this.refetch(i));
   }
@@ -344,7 +333,7 @@ export class ChartComponent implements OnInit, OnDestroy {
 
   addIndicator(a: IndicatorAdd): void {
     const d = this.def(a.code);
-    if (!d || this.instances.length >= 8 || (d.placement === 'PANE' && this.panes() >= 3)) return;
+    if (!d || this.instances.length >= MAX_INDICATORS || (d.placement === 'PANE' && this.panes() >= MAX_PANES)) return;
     const inst: IndicatorInstance = { id: `ind-${++this.seq}`, code: a.code, params: a.params, color: this.nextColor(), visible: true, status: 'loading', error: '', result: null };
     this.instances = [...this.instances, inst];
     this.syncChart();
